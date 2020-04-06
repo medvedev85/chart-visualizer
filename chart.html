@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Chart page</title>
+</head>
+
+<body>
+    <input type="text" style="width:  500px; height: 55px; word-break: break-word;">
+    <span id="result"></span><br>
+
+    <canvas id="canvas">Your browser is not supported</canvas>
+
+    <script>
+        "use strict"
+        let canvas = document.getElementById("canvas"),
+            ctx = canvas.getContext("2d"),
+            rects = [],
+            coordinate = {},
+            json,
+            sizeWidth = window.innerWidth / 100,
+            input = document.body.children[0];
+
+        input.oninput = function () { //берем данные из JSON для отрисовки графиков
+            document.getElementById.innerHTML = input.value;
+            json = input.value;
+            json = JSON.parse(json);
+            document.getElementById("canvas").innerHTML = size();
+        };
+
+        canvas.width  = window.innerWidth;
+        canvas.height = 0;
+
+        function size() { //рассчитываем оптимальный размер
+            canvas.height = (json.sequences) ? (113 + (json.sequences.length -1) * 40) : 0;
+            return canvas.height;
+        }
+
+        canvas.onmousemove = function (e) { //координаты курсора по отношению к канвасу
+            coordinate.x = e.x;
+            coordinate.y = e.y - 70;
+        }
+
+        setInterval(function drow() { //перерисовываем холст для учета изменений
+            sizeWidth = window.innerWidth / 100;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (typeof json == "object") {
+                draw();
+                document.getElementById('result').innerHTML = "";
+            } else {
+                document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+            }
+        }, 200);
+
+        function draw() { //отрисовать весь холст
+            let position = 65;
+            topic();
+            RectPaint(0, position);
+            
+            for (let i = 1; i < json.sequences.length; i++) {
+                position = 65 + 40 * i;
+                RectPaint(i, position);
+            }
+
+            titleWhithFocus();
+        }
+
+        function TitleText(i, x, y) { //создаем текст подсказки
+            let motif = json.motif,
+                value = json.occurences[i]['p-value'];
+
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.font = "10pt Arial";
+            ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
+            ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
+        }
+
+        function titleWhithFocus() { //проверяем попадание мыши в мотив и рисуем подсказку
+            for (let i = 0; i < rects.length; i++) {
+                if (coordinate.x + 5 >= rects[i].x && coordinate.x - 15 < rects[i].w + rects[i].x
+                    && coordinate.y + 5 >= rects[i].y && coordinate.y - 5 <= rects[i].h + rects[i].y) {
+                    let titleCenter = rects[i].w / 2 + rects[i].x,
+                        x = titleCenter - sizeWidth * 7,
+                        w = (titleCenter + sizeWidth * 5) - x,
+                        y = rects[i].y + 20,
+                        h = 40;
+
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.clearRect(x, y, w, h);
+                    TitleText(i, x, y);
+                }
+            }
+        }
+
+        function RectPaint(i, position) { //отрисовать прямоугольники (мотив)
+            linePaint(position);
+            nameData(i, position);
+            ctx.fillStyle = "blue";
+            let long = (sizeWidth * 90 - sizeWidth * 17) / json.sequences[i].sequence.length;
+            rects[i] = {};
+            rects[i].x = Math.ceil(json.occurences[i].start * long + sizeWidth * 17);
+            rects[i].w = Math.floor((json.occurences[i].end * long + sizeWidth * 17) - rects[i].x);
+            rects[i].w < sizeWidth * 3 ? rects[i].w = sizeWidth * 3 : rects[i].w = rects[i].w;
+            rects[i].h = 12;
+            rects[i].y = position - 13;
+            ctx.rect(rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+            ctx.fill();
+        }
+
+        function linePaint(position) { //отрисовать линию 
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.beginPath();
+            ctx.moveTo(sizeWidth * 17, position);
+            ctx.lineTo(sizeWidth * 90, position);
+            ctx.stroke();
+        }
+
+        function nameData(i, position) { //текст перед линией (порядковый номер, название последовательности, p-value)
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.font = "10pt Arial";
+            ctx.fillText(i + 1 + '.', sizeWidth * 2, position, sizeWidth * 5);
+            ctx.fillText(json.occurences[i].name, sizeWidth * 3, position, sizeWidth * 5);
+            ctx.fillText(json.occurences[i]['p-value'], sizeWidth * 10, position, sizeWidth * 5);
+        }
+
+        function topic() { //создаем заголовок
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.font = "bold 10pt Arial";
+            ctx.fillText('Name', sizeWidth * 2, 40, sizeWidth * 5);
+            ctx.fillText('p-value', sizeWidth * 9, 40, sizeWidth * 8);
+            ctx.fillText('Motif Locations', sizeWidth * 17, 40, sizeWidth * 15);
+        }
+    </script>
+
+</body>
+</html>
