@@ -41,12 +41,28 @@ setInterval(function drow() { //перерисовываем холст для �
     }
 }, 200);
 
+class JsonData {
+    constructor (name) {
+        this.name = name;
+        this.json = JSON.parse(json);
+        this.
+    }
+}
+
 function draw() { //отрисовать весь холст
 
 }
 
-function TitleText() { //создаем текст подсказки
+function TitleText(motifs, sequences, occurences, ranges) { //создаем текст подсказки
+    let motif = json[motifs].motif;
+    let value = json.occurences[i]['p-value'];
+    let sequence = json.motifs[motifs].occurences[occurences].ranges[ranges].complementary == 0 ? json.sequences[sequences].sequence : json.sequences[sequences].sequence;
 
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.font = "10pt Arial";
+    ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
+    ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
+    ctx.fillText('sequences:' + ' ' + sequence, x + 6, y + 32, sizeWidth * 9);
 }
 
 function titleWhithFocus() { //проверяем попадание мыши в мотив и рисуем подсказку
@@ -76,7 +92,7 @@ function RectPaint(sequences, rectNumber, motifs, occurences, ranges, position) 
     rects[rectNumber].w = Math.floor((json.motifs[motifs].occurences[occurences].ranges[ranges].end * long + sizeWidth * 17) - rects[rectNumber].x);
     rects[rectNumber].w < sizeWidth * 3 ? rects[rectNumber].w = sizeWidth * 3 : rects[rectNumber].w = rects[rectNumber].w;
     rects[rectNumber].h = sizeHeight * 2;
-    rects[rectNumber].y = sizeHeight * 14;
+    rects[rectNumber].y = json.motifs[motifs].occurences[occurences].ranges[ranges].complementary == 0 ? sizeHeight * 14 : sizeHeight * 16;
     ctx.rect(rects[rectNumber].x, rects[rectNumber].y, rects[rectNumber].w, rects[rectNumber].h);
     ctx.fill();
 }
