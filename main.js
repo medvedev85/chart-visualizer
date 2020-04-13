@@ -1,121 +1,75 @@
 "use strict"
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-let rects = [];
-let coordinate = {};
-let json;
 let sizeWidth = window.innerWidth / 100;
 let sizeHeight = window.innerHeight / 100;
 let input = document.getElementById("json_input_id");
 
-input.oninput = function () { //берем данные из JSON для отрисовки графиков
-    json = input.value;
-    json = JSON.parse(json);
-    document.getElementById("canvas").innerHTML = size();
-};
+class ChartDrawer {
+    constructor(canvasElementId) {
+        this.canvas = document.getElementById(canvasElementId);
+        this.ctx = canvas.getContext("2d");
+        this.rects = [];
+        this.coordinate = {};
+        this.input = input;
+        this.json = null;
 
-canvas.width = window.innerWidth;
-canvas.height = 0;
-
-function size() { //рассчитываем оптимальный размер
-    canvas.height = (json.sequences) ? (1130 + (json.sequences.length - 1) * 40) : 0;
-    return canvas.height;
-}
-
-canvas.onmousemove = function (e) { //координаты курсора по отношению к канвасу
-    coordinate.x = e.offsetX == undefined ? e.layerX : e.offsetX;
-    coordinate.y = e.offsetY == undefined ? e.layerY : e.offsetY;
-}
-
-setInterval(function drow() { //перерисовываем холст для учета изменений
-    sizeWidth = window.innerWidth / 100;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (typeof json == "object") {
-        topic();
-        RectPaint(0, 0, 0, 0, 0, 65);
-        titleWhithFocus();
-        document.getElementById('result').innerHTML = "";
-    } else {
-        document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
     }
-}, 200);
-
-class JsonData {
-    constructor (name) {
-        this.name = name;
-        this.json = JSON.parse(json);
-        this.
+    nameSequence() {
+        this.sequences = this.json.sequences;
+        this.motifs = this.json.motifs;
+        this.names = [];
+        for (let i = 0; i < this.json.sequences.length; i++) {
+            this.names[i] = this.json.sequences[i].name;
+        }
     }
-}
+    setData() {
 
-function draw() { //отрисовать весь холст
-
-}
-
-function TitleText(motifs, sequences, occurences, ranges) { //создаем текст подсказки
-    let motif = json[motifs].motif;
-    let value = json.occurences[i]['p-value'];
-    let sequence = json.motifs[motifs].occurences[occurences].ranges[ranges].complementary == 0 ? json.sequences[sequences].sequence : json.sequences[sequences].sequence;
-
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.font = "10pt Arial";
-    ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
-    ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
-    ctx.fillText('sequences:' + ' ' + sequence, x + 6, y + 32, sizeWidth * 9);
-}
-
-function titleWhithFocus() { //проверяем попадание мыши в мотив и рисуем подсказку
-    for (let i = 0; i < rects.length; i++) {
-        if (coordinate.x + 5 >= rects[i].x && coordinate.x - 15 < rects[i].w + rects[i].x
-            && coordinate.y + 5 >= rects[i].y && coordinate.y - 5 <= rects[i].h + rects[i].y) {
-            let titleCenter = rects[i].w / 2 + rects[i].x,
-                x = titleCenter - sizeWidth * 10,
-                w = (titleCenter + sizeWidth * 10) - x,
-                y = rects[i].y + sizeHeight * 4,
-                h = sizeHeight * 25;
-
-            ctx.strokeRect(x, y, w, h);
-            ctx.clearRect(x, y, w, h);
-            TitleText(i, x, y);
+        if (typeof this.json == "object") {
+            document.getElementById('result').innerHTML = "";
+        } else {
+            document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
         }
     }
 }
 
-function RectPaint(sequences, rectNumber, motifs, occurences, ranges, position) { //отрисовать прямоугольники (мотив)
-    linePaint(position);
-    nameData(motifs, occurences, position);
-    ctx.fillStyle = "blue";
-    let long = (sizeWidth * 90 - sizeWidth * 17) / json.sequences[sequences].sequence.length;
-    rects[rectNumber] = {};
-    rects[rectNumber].x = Math.ceil(json.motifs[motifs].occurences[occurences].ranges[ranges].start * long + sizeWidth * 17);
-    rects[rectNumber].w = Math.floor((json.motifs[motifs].occurences[occurences].ranges[ranges].end * long + sizeWidth * 17) - rects[rectNumber].x);
-    rects[rectNumber].w < sizeWidth * 3 ? rects[rectNumber].w = sizeWidth * 3 : rects[rectNumber].w = rects[rectNumber].w;
-    rects[rectNumber].h = sizeHeight * 2;
-    rects[rectNumber].y = json.motifs[motifs].occurences[occurences].ranges[ranges].complementary == 0 ? sizeHeight * 14 : sizeHeight * 16;
-    ctx.rect(rects[rectNumber].x, rects[rectNumber].y, rects[rectNumber].w, rects[rectNumber].h);
-    ctx.fill();
+let chartDrawer = new ChartDrawer("canvas");
+
+input.oninput = function () { //берем данные из JSON для отрисовки графиков
+    chartDrawer.json = JSON.parse(chartDrawer.input.value);
+    chartDrawer.nameSequence();
+    chartDrawer.setData();
+    getHeight();
+    topic();
+    chartDrawer.nameData();
+};
+
+chartDrawer.canvas.width = window.innerWidth;
+chartDrawer.canvas.height = 0;
+
+function getHeight() { //рассчитываем оптимальный размер
+    canvas.height = (chartDrawer.json.sequences) ? (1130 + (chartDrawer.json.sequences.length - 1) * 40) : 0;
+    return canvas.height;
 }
 
-function linePaint(position) { //отрисовать линию 
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.beginPath();
-    ctx.moveTo(sizeWidth * 17, sizeHeight * 16);
-    ctx.lineTo(sizeWidth * 90, sizeHeight * 16);
-    ctx.stroke();
+chartDrawer.canvas.onmousemove = function (e) { //координаты курсора по отношению к канвасу
+    chartDrawer.coordinate.x = e.offsetX;
+    chartDrawer.coordinate.y = e.offsetY;
+    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
 }
 
-function nameData(motifs, occurences, position) { //текст перед линией (порядковый номер, название последовательности, p-value)
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.font = "10pt Arial";
-    ctx.fillText(motifs + 1 + '.', sizeWidth * 5, sizeHeight * 16, sizeWidth * 5);
-    ctx.fillText(json.motifs[motifs].occurences[occurences].sequence_name, sizeWidth * 6, sizeHeight * 16, sizeWidth * 5);
-    
+
+
+chartDrawer.nameData = function () { //текст перед линией (порядковый номер, название последовательности, p-value)
+    for (let i = 0; i < this.names.length; i++) {
+        chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
+        chartDrawer.ctx.font = "10pt Arial";
+        chartDrawer.ctx.fillText(i + 1 + '.', sizeWidth * 5, sizeHeight * 16 + sizeHeight * 9 * i, sizeWidth * 5);
+        chartDrawer.ctx.fillText(this.names[i], sizeWidth * 6, sizeHeight * 16 + sizeHeight * 9 * i, sizeWidth * 5);
+    }
 }
 
 function topic() { //создаем заголовок
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.font = "bold 10pt Arial";
-    ctx.fillText('Name', sizeWidth * 5, sizeHeight * 9, sizeWidth * 5);
-    ctx.fillText('Motif Locations', sizeWidth * 17, sizeHeight * 9, sizeWidth * 15);
+    chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
+    chartDrawer.ctx.font = "bold 10pt Arial";
+    chartDrawer.ctx.fillText('Name', sizeWidth * 5, sizeHeight * 9, sizeWidth * 5);
+    chartDrawer.ctx.fillText('Motif Locations', sizeWidth * 17, sizeHeight * 9, sizeWidth * 15);
 }
