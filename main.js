@@ -40,6 +40,7 @@ input.oninput = function () { //берем данные из JSON для отр�
     getHeight();
     topic();
     chartDrawer.nameData();
+    chartDrawer.linePaint();
 };
 
 chartDrawer.canvas.width = window.innerWidth;
@@ -56,9 +57,25 @@ chartDrawer.canvas.onmousemove = function (e) { //координаты курс�
     //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
 }
 
+chartDrawer.rectsPaint = function () {
+    ctx.fillStyle = "blue";
+    let long = (sizeWidth * 90 - sizeWidth * 17) / json.sequences[sequences].sequence.length;
+    for (let i = 0; i < this.names.length; i++) {
+        
+    }
+}
 
+chartDrawer.linePaint = function () {
+    for (let i = 0; i < this.names.length; i++) {
+        chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
+        chartDrawer.ctx.beginPath();
+        chartDrawer.ctx.moveTo(sizeWidth * 17, sizeHeight * 16 + sizeHeight * 9 * i);
+        chartDrawer.ctx.lineTo(sizeWidth * 90, sizeHeight * 16 + sizeHeight * 9 * i);
+        chartDrawer.ctx.stroke();
+    }
+}
 
-chartDrawer.nameData = function () { //текст перед линией (порядковый номер, название последовательности, p-value)
+chartDrawer.nameData = function () {
     for (let i = 0; i < this.names.length; i++) {
         chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
         chartDrawer.ctx.font = "10pt Arial";
@@ -67,7 +84,7 @@ chartDrawer.nameData = function () { //текст перед линией (по�
     }
 }
 
-function topic() { //создаем заголовок
+function topic() {
     chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
     chartDrawer.ctx.font = "bold 10pt Arial";
     chartDrawer.ctx.fillText('Name', sizeWidth * 5, sizeHeight * 9, sizeWidth * 5);
