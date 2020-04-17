@@ -4,10 +4,8 @@ let input = document.getElementById("json_input_id");
 let params = {
     canvasElementId: "canvas",
     motifColors: ["blue", "red", "yellow", "pink", "green"],
-    //lineLeftBorder: 17,
-    //lineRightBorder: 90
-    params.sizeWidth: window.innerWidth / 100,
-    params.sizeHeight: window.innerHeight / 100
+    sizeWidth: window.innerWidth / 100,
+    sizeHeight: window.innerHeight / 100
 }
 
 import {ChartDrawer} from './chart_modules/ChartDrawer.js';
@@ -31,7 +29,6 @@ input.oninput = function () {
         document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
     }
 }
-
 
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;

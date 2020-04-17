@@ -7,6 +7,8 @@ export class ChartDrawer {
         this.coordinate = {};
         this.sequences = this.json.sequences;
         this.motifs = this.json.motifs;
+        this.sizeWidth = params.sizeWidth;
+        this.sizeHeight = params.sizeHeight;
     }
     nameSequence() {
         this.sequences = this.json.sequences;
@@ -44,17 +46,17 @@ export class ChartDrawer {
                     this.name = this.names[j];
                 }
 
-                this.long = (params.sizeWidth * 90 - params.sizeWidth * 17) / this.rangesFullData[i].sequenceLenght;
+                this.long = (this.sizeWidth * 90 - this.sizeWidth * 17) / this.rangesFullData[i].sequenceLenght;
                 if (this.rangesFullData[i].complementary == 1) {
-                    this.long = (params.sizeWidth * 90 - params.sizeWidth * 17) / this.rangesFullData[i].complementarySequenceLenght;
+                    this.long = (this.sizeWidth * 90 - this.sizeWidth * 17) / this.rangesFullData[i].complementarySequenceLenght;
                 }
                 this.ctx.fillStyle = "blue";
                 this.rects[i] = {};
-                this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + params.sizeWidth * 17);
-                this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + params.sizeWidth * 17) - this.rects[i].x);
-                this.rects[i].w = this.rects[i].w >= params.sizeWidth * 3 ? this.rects[i].w : params.sizeWidth * 3;
-                this.rects[i].h = params.sizeHeight * 2;
-                this.rects[i].y = params.sizeHeight * 14 + params.sizeHeight * 9 * this.name;
+                this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + this.sizeWidth * 17);
+                this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + this.sizeWidth * 17) - this.rects[i].x);
+                this.rects[i].w = this.rects[i].w >= this.sizeWidth * 3 ? this.rects[i].w : this.sizeWidth * 3;
+                this.rects[i].h = this.sizeHeight * 2;
+                this.rects[i].y = this.sizeHeight * 14 + this.sizeHeight * 9 * this.name;
                 this.ctx.rect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
                 this.ctx.fill();
             }
@@ -62,19 +64,19 @@ export class ChartDrawer {
     }
     setLineDescription() {
         for (let i = 0; i < this.names.length; i++) {
-            chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-            chartDrawer.ctx.font = "10pt Arial";
-            chartDrawer.ctx.fillText(i + 1 + '.', params.sizeWidth * 5, params.sizeHeight * 16 + params.sizeHeight * 9 * i, params.sizeWidth * 5);
-            chartDrawer.ctx.fillText(this.names[i], params.sizeWidth * 6, params.sizeHeight * 16 + params.sizeHeight * 9 * i, params.sizeWidth * 5);
+            this.ctx.fillStyle = "rgb(0, 0, 0)";
+            this.ctx.font = "10pt Arial";
+            this.ctx.fillText(i + 1 + '.', this.sizeWidth * 5, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
+            this.ctx.fillText(this.names[i], this.sizeWidth * 6, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
         }
     }
     linePaint() {
         for (let i = 0; i < this.names.length; i++) {
-            chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-            chartDrawer.ctx.beginPath();
-            chartDrawer.ctx.moveTo(params.sizeWidth * 17, params.sizeHeight * 16 + params.sizeHeight * 9 * i);
-            chartDrawer.ctx.lineTo(params.sizeWidth * 90, params.sizeHeight * 16 + params.sizeHeight * 9 * i);
-            chartDrawer.ctx.stroke();
+            this.ctx.fillStyle = "rgb(0, 0, 0)";
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.sizeWidth * 17, this.sizeHeight * 16 + this.sizeHeight * 9 * i);
+            this.ctx.lineTo(this.sizeWidth * 90, this.sizeHeight * 16 + this.sizeHeight * 9 * i);
+            this.ctx.stroke();
         }
     }
 }
