@@ -1,59 +1,24 @@
 "use strict"
-let sizeWidth = window.innerWidth / 100;
-let sizeHeight = window.innerHeight / 100;
+
 let input = document.getElementById("json_input_id");
-
-class ChartDrawer {
-    constructor(canvasElementId) {
-        this.canvas = document.getElementById(canvasElementId);
-        this.ctx = canvas.getContext("2d");
-        this.rects = [];
-        this.json = {};
-        this.coordinate = {};
-        this.sequences = this.json.sequences;
-        this.motifs = this.json.motifs;
-    }
-    nameSequence() {
-        this.sequences = this.json.sequences;
-        this.motifs = this.json.motifs;
-        this.names = [];
-        for (let i = 0; i < this.json.sequences.length; i++) {
-            this.names[i] = this.json.sequences[i].name;
-        }
-    }
-    getRangesFullData() {
-        this.rangesFullData = [];
-        for (let i = 0; i < this.motifs.length; i++) {
-            for (let j = 0; j < this.motifs[i].occurences.length; j++) {
-                for (let k = 0; k < this.motifs[i].occurences[j].ranges.length; k++) {
-                    this.motifs[i].occurences[j].ranges[k].motif = this.motifs[i].motif;
-                    this.motifs[i].occurences[j].ranges[k].sequence_name = this.motifs[i].occurences[j].sequence_name;
-                    this.rangesFullData.push(this.motifs[i].occurences[j].ranges[k]);
-                }
-            }
-        }
-        for (let i = 0; i < this.rangesFullData.length; i++) {
-            for (let j = 0; j < this.sequences.length; j++) {
-                if (this.rangesFullData[i].sequence_name == this.sequences[j].name) {
-                    this.rangesFullData[i].index = this.names.indexOf(this.rangesFullData[i].sequence_name);
-                    this.rangesFullData[i].sequenceLenght = this.sequences[j].sequence.length;
-                    this.rangesFullData[i].complementarySequenceLenght = this.sequences[j].complementary_sequence.length;
-                    this.rangesFullData[i].sequence = this.sequences[j].sequence;
-                    this.rangesFullData[i].complementarySequence = this.sequences[j].complementary_sequence;
-                }
-            }
-        }
-
-    }
+let params = {
+    canvasElementId: "canvas",
+    motifColors: ["blue", "red", "yellow", "pink", "green"],
+    //lineLeftBorder: 17,
+    //lineRightBorder: 90
+    params.sizeWidth: window.innerWidth / 100,
+    params.sizeHeight: window.innerHeight / 100
 }
 
-let chartDrawer = new ChartDrawer("canvas");
+import {ChartDrawer} from './chart_modules/ChartDrawer.js';
+
+let chartDrawer = new ChartDrawer(params);
 
 input.oninput = function () {
-    chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
+    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
     chartDrawer.json = JSON.parse(input.value);
     chartDrawer.nameSequence();
-    chartDrawer.getRangesFullData();
+    chartDrawer.fillRangesFullData();
     getHeight();
     createHeader();
     chartDrawer.linePaint();
@@ -68,7 +33,7 @@ input.oninput = function () {
 }
 
 
-chartDrawer.canvas.onmousemove = function (e) { //координаты курсора по отношению к канвасу
+chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
     chartDrawer.coordinate.y = e.offsetY;
     //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
@@ -85,49 +50,6 @@ function getHeight() { //рассчитываем оптимальный раз�
 function createHeader() {
     chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
     chartDrawer.ctx.font = "bold 10pt Arial";
-    chartDrawer.ctx.fillText('Name', sizeWidth * 5, sizeHeight * 9, sizeWidth * 5);
-    chartDrawer.ctx.fillText('Motif Locations', sizeWidth * 17, sizeHeight * 9, sizeWidth * 15);
-}
-
-chartDrawer.linePaint = function () {
-    for (let i = 0; i < this.names.length; i++) {
-        chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-        chartDrawer.ctx.beginPath();
-        chartDrawer.ctx.moveTo(sizeWidth * 17, sizeHeight * 16 + sizeHeight * 9 * i);
-        chartDrawer.ctx.lineTo(sizeWidth * 90, sizeHeight * 16 + sizeHeight * 9 * i);
-        chartDrawer.ctx.stroke();
-    }
-}
-
-chartDrawer.setLineDescription = function () {
-    for (let i = 0; i < this.names.length; i++) {
-        chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-        chartDrawer.ctx.font = "10pt Arial";
-        chartDrawer.ctx.fillText(i + 1 + '.', sizeWidth * 5, sizeHeight * 16 + sizeHeight * 9 * i, sizeWidth * 5);
-        chartDrawer.ctx.fillText(this.names[i], sizeWidth * 6, sizeHeight * 16 + sizeHeight * 9 * i, sizeWidth * 5);
-    }
-}
-
-chartDrawer.createChart = function () {
-    for (let i = 0; i < this.rangesFullData.length; i++) {
-        for (let j = 0; j < this.names.length; j++) {
-            if (this.rangesFullData[i].sequence_name == this.names[j]) {
-                this.name = this.names[j];
-            }
-
-            this.long = (sizeWidth * 90 - sizeWidth * 17) / this.rangesFullData[i].sequenceLenght;
-            if (this.rangesFullData[i].complementary == 1) {
-                this.long = (sizeWidth * 90 - sizeWidth * 17) / this.rangesFullData[i].complementarySequenceLenght;
-            }
-            this.ctx.fillStyle = "blue";
-            this.rects[i] = {};
-            this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + sizeWidth * 17);
-            this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + sizeWidth * 17) - this.rects[i].x);
-            this.rects[i].w = this.rects[i].w >= sizeWidth * 3 ? this.rects[i].w : sizeWidth * 3;
-            this.rects[i].h = sizeHeight * 2;
-            this.rects[i].y = sizeHeight * 14 + sizeHeight * 9 * this.name;
-            this.ctx.rect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
-            this.ctx.fill();
-        }
-    }
+    chartDrawer.ctx.fillText('Name', params.sizeWidth * 5, params.sizeHeight * 9, params.sizeWidth * 5);
+    chartDrawer.ctx.fillText('Motif Locations', params.sizeWidth * 17, params.sizeHeight * 9, params.sizeWidth * 15);
 }
