@@ -1,7 +1,7 @@
 export class ChartDrawer {
     constructor(params) {
-        this.canvas = document.getElementById(params.canvasElementId);
-        this.ctx = canvas.getContext("2d");
+        this.canvas = params.canvas;
+        this.ctx = params.ctx;
         this.rects = [];
         this.json = {};
         this.coordinate = {};
@@ -9,17 +9,17 @@ export class ChartDrawer {
         this.motifs = this.json.motifs;
         this.sizeWidth = params.sizeWidth;
         this.sizeHeight = params.sizeHeight;
+        this.rangesFullData = [];
+        this.names = [];
     }
     nameSequence() {
         this.sequences = this.json.sequences;
         this.motifs = this.json.motifs;
-        this.names = [];
         for (let i = 0; i < this.json.sequences.length; i++) {
             this.names[i] = this.json.sequences[i].name;
         }
     }
     fillRangesFullData() {
-        this.rangesFullData = [];
         for (let i = 0; i < this.motifs.length; i++) {
             for (let j = 0; j < this.motifs[i].occurences.length; j++) {
                 for (let k = 0; k < this.motifs[i].occurences[j].ranges.length; k++) {
@@ -64,15 +64,12 @@ export class ChartDrawer {
     }
     setLineDescription() {
         for (let i = 0; i < this.names.length; i++) {
-            this.ctx.fillStyle = "rgb(0, 0, 0)";
-            this.ctx.font = "10pt Arial";
             this.ctx.fillText(i + 1 + '.', this.sizeWidth * 5, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
             this.ctx.fillText(this.names[i], this.sizeWidth * 6, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
         }
     }
-    linePaint() {
+    paintLine() {
         for (let i = 0; i < this.names.length; i++) {
-            this.ctx.fillStyle = "rgb(0, 0, 0)";
             this.ctx.beginPath();
             this.ctx.moveTo(this.sizeWidth * 17, this.sizeHeight * 16 + this.sizeHeight * 9 * i);
             this.ctx.lineTo(this.sizeWidth * 90, this.sizeHeight * 16 + this.sizeHeight * 9 * i);

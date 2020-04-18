@@ -1,25 +1,28 @@
 "use strict"
 
-let input = document.getElementById("json_input_id");
+import {ChartDrawer} from './chart_modules/ChartDrawer.js';
+
 let params = {
-    canvasElementId: "canvas",
+    input: document.getElementById("json_input_id"),
+    canvas: document.getElementById("canvas"),
+    ctx: canvas.getContext("2d"),
     motifColors: ["blue", "red", "yellow", "pink", "green"],
     sizeWidth: window.innerWidth / 100,
     sizeHeight: window.innerHeight / 100
 }
 
-import {ChartDrawer} from './chart_modules/ChartDrawer.js';
-
 let chartDrawer = new ChartDrawer(params);
-
-input.oninput = function () {
-    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
+debugger;
+chartDrawer.input.oninput = function () {
+    debugger; 
+   // params.ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
     chartDrawer.json = JSON.parse(input.value);
+
     chartDrawer.nameSequence();
     chartDrawer.fillRangesFullData();
     getHeight();
     createHeader();
-    chartDrawer.linePaint();
+    chartDrawer.paintLine();
     chartDrawer.setLineDescription();
     chartDrawer.createChart();
 
@@ -33,7 +36,7 @@ input.oninput = function () {
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
     chartDrawer.coordinate.y = e.offsetY;
-    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
+   // chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
 }
 
 canvas.width = window.innerWidth;
