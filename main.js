@@ -1,7 +1,5 @@
 "use strict"
 
-import {ChartDrawer} from './chart_modules/ChartDrawer.js';
-
 let params = {
     input: document.getElementById("json_input_id"),
     canvas: document.getElementById("canvas"),
@@ -12,11 +10,11 @@ let params = {
 }
 
 let chartDrawer = new ChartDrawer(params);
-debugger;
+
 chartDrawer.input.oninput = function () {
-    debugger; 
+    
    // params.ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
-    chartDrawer.json = JSON.parse(input.value);
+    chartDrawer.json = JSON.parse(chartDrawer.input.value);
 
     chartDrawer.nameSequence();
     chartDrawer.fillRangesFullData();
@@ -26,7 +24,7 @@ chartDrawer.input.oninput = function () {
     chartDrawer.setLineDescription();
     chartDrawer.createChart();
 
-    if (typeof input == "object") {
+    if (typeof chartDrawer.input == "object") {
         document.getElementById('result').innerHTML = "";
     } else {
         document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";

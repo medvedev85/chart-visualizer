@@ -1,5 +1,6 @@
-export class ChartDrawer {
+class ChartDrawer {
     constructor(params) {
+        this.input = params.input;
         this.canvas = params.canvas;
         this.ctx = params.ctx;
         this.rects = [];
