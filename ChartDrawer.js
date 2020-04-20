@@ -3,15 +3,18 @@ class ChartDrawer {
         this.input = params.input;
         this.canvas = params.canvas;
         this.ctx = params.ctx;
+        this.motifColors = params.motifColors;
+        this.leftBorder = params.leftBorder;
+        this.rightBorder = params.rightBorder;
+        this.marginTop = params.marginTop;
+        this.stepLine = params.stepLine;
+        this.rectHeight = params.rectHeight;
+        this.minSizeRect = params.minSizeRect;
         this.rects = [];
-        this.json = {};
+        this.json = null;
         this.coordinate = {};
-        this.sequences = this.json.sequences;
-        this.motifs = this.json.motifs;
-        this.sizeWidth = params.sizeWidth;
-        this.sizeHeight = params.sizeHeight;
-        this.rangesFullData = [];
         this.names = [];
+        
     }
     nameSequence() {
         this.sequences = this.json.sequences;
@@ -21,6 +24,7 @@ class ChartDrawer {
         }
     }
     fillRangesFullData() {
+        this.rangesFullData = [];
         for (let i = 0; i < this.motifs.length; i++) {
             for (let j = 0; j < this.motifs[i].occurences.length; j++) {
                 for (let k = 0; k < this.motifs[i].occurences[j].ranges.length; k++) {
@@ -47,33 +51,33 @@ class ChartDrawer {
                     this.name = this.names[j];
                 }
 
-                this.long = (this.sizeWidth * 90 - this.sizeWidth * 17) / this.rangesFullData[i].sequenceLenght;
+                this.long = (this.rightBorder - this.leftBorder) / this.rangesFullData[i].sequenceLenght;
                 if (this.rangesFullData[i].complementary == 1) {
-                    this.long = (this.sizeWidth * 90 - this.sizeWidth * 17) / this.rangesFullData[i].complementarySequenceLenght;
+                    this.long = (this.rightBorder - this.leftBorder) / this.rangesFullData[i].complementarySequenceLenght;
                 }
                 this.ctx.fillStyle = "blue";
                 this.rects[i] = {};
-                this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + this.sizeWidth * 17);
-                this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + this.sizeWidth * 17) - this.rects[i].x);
-                this.rects[i].w = this.rects[i].w >= this.sizeWidth * 3 ? this.rects[i].w : this.sizeWidth * 3;
-                this.rects[i].h = this.sizeHeight * 2;
-                this.rects[i].y = this.sizeHeight * 14 + this.sizeHeight * 9 * this.name;
+                this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + this.leftBorder);
+                this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + this.leftBorder) - this.rects[i].x);
+                this.rects[i].w = this.rects[i].w >= this.minSizeRect ? this.rects[i].w : this.minSizeRect;
+                this.rects[i].h = this.rectHeight;
+                this.rects[i].y = this.marginTop - this.rectHeight + this.stepLine * this.name;
                 this.ctx.rect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
                 this.ctx.fill();
             }
         }
     }
-    setLineDescription() {
+    setLineDescription() { // будет переписана (элемент HTML)
         for (let i = 0; i < this.names.length; i++) {
-            this.ctx.fillText(i + 1 + '.', this.sizeWidth * 5, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
-            this.ctx.fillText(this.names[i], this.sizeWidth * 6, this.sizeHeight * 16 + this.sizeHeight * 9 * i, this.sizeWidth * 5);
+            this.ctx.fillText(i + 1 + '.', 5, this.marginTop + this.stepLine * i, 10);
+            this.ctx.fillText(this.names[i], 18, this.marginTop + this.stepLine * i, 10);
         }
     }
     paintLine() {
         for (let i = 0; i < this.names.length; i++) {
             this.ctx.beginPath();
-            this.ctx.moveTo(this.sizeWidth * 17, this.sizeHeight * 16 + this.sizeHeight * 9 * i);
-            this.ctx.lineTo(this.sizeWidth * 90, this.sizeHeight * 16 + this.sizeHeight * 9 * i);
+            this.ctx.moveTo(this.leftBorder, this.marginTop + this.stepLine * i);
+            this.ctx.lineTo(this.rightBorder, this.marginTop + this.stepLine * i);
             this.ctx.stroke();
         }
     }
