@@ -67,12 +67,6 @@ class ChartDrawer {
             }
         }
     }
-    setLineDescription() { // будет переписана (элемент HTML)
-        for (let i = 0; i < this.names.length; i++) {
-            this.ctx.fillText(i + 1 + '.', 5, this.marginTop + this.stepLine * i, 10);
-            this.ctx.fillText(this.names[i], 18, this.marginTop + this.stepLine * i, 10);
-        }
-    }
     paintLine() {
         for (let i = 0; i < this.names.length; i++) {
             this.ctx.beginPath();

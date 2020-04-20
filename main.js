@@ -15,27 +15,28 @@ let params = {
 
 let chartDrawer = new ChartDrawer(params);
 
+//chartDrawer.input.onpaste
 chartDrawer.input.oninput = function () {
-    if (typeof chartDrawer.json == "object") {
-        document.getElementById('result').innerHTML = "";
-        
-    } else {
-        document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
-    }
-    
     chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
     chartDrawer.json = JSON.parse(chartDrawer.input.value);
 
     chartDrawer.nameSequence();
     chartDrawer.fillRangesFullData();
     getHeight();
-    createHeader();
     chartDrawer.paintLine();
-    chartDrawer.setLineDescription();
+    setLineDescription();
     chartDrawer.createChart();
+    document.getElementById('hederCanvas').style.display = 'block';
 
-    
+    if (typeof chartDrawer.json == "object") {
+        document.getElementById('result').innerHTML = "";
+        
+    } else {
+        document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+    }
 }
+
+//document.getElementById('space').innerHTML = chartDrawer.leftBorder;
 
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
@@ -47,13 +48,17 @@ canvas.width = chartDrawer.leftBorder + chartDrawer.rightBorder;
 canvas.height = 0;
 
 function getHeight() {
-    canvas.height = (chartDrawer.json.sequences) ? chartDrawer.marginTop + chartDrawer.stepLine * chartDrawer.names.length : 0;
+    if (chartDrawer.json.sequences) {
+        canvas.height = chartDrawer.marginTop + chartDrawer.stepLine * (chartDrawer.names.length + 1);
+
+    } 
     return canvas.height;
 }
 
-function createHeader() { // будет переписана (элемент HTML)
-    chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-    chartDrawer.ctx.font = "bold 10pt Arial";
-    chartDrawer.ctx.fillText('Name', 10, 60, 100);
-    chartDrawer.ctx.fillText('Motif Locations', 100, 60, 100);
+function setLineDescription() {
+    let str = "";
+    for (let i = 0; i < chartDrawer.names.length; i++) {
+        str += i + 1 + '. ' + chartDrawer.names[i] + ' ' + '\n'
+    }
+    document.getElementById('line_name').innerHTML = str;
 }

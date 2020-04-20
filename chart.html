@@ -3,15 +3,27 @@
 
 <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
     <script src="ChartDrawer.js"></script>
     <script defer src="main.js"></script>
     <title>Chart page</title>
 </head>
 
 <body>
-    <textarea id="json_input_id" style="width: 800px; height: 300px; word-break: break-word;"></textarea>
+    <textarea id="json_input_id"></textarea>
     <span id="result"> Поместите данные в формате JSON!</span><br>
-    <canvas id="canvas">Your browser is not supported</canvas>
+    <div id="canvasContainer">
+        <div id="hederCanvas">
+            <span id="name">Name</span>
+            <span id="motif_locations">Motif Locations</span>
+        </div>
+        <div id="line_name_container">
+            <span id="line_name"></span>
+        </div>
+        
+        
+        <canvas id="canvas">Your browser is not supported</canvas>
+    </div>
 </body>
 
 </html>
