@@ -9,7 +9,7 @@ let params = {
     lineWidth: 1000,
     marginTop: 100,
     stepLine: 50,
-    rectHeight: 10,
+    rectHeight: 15,
     minSizeRect: 20
 }
 
@@ -24,12 +24,5 @@ chartDrawer.input.oninput = function () {
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
     chartDrawer.coordinate.y = e.offsetY;
-}
-
-function setLineDescription() {
-    let str = "";
-    for (let i = 0; i < chartDrawer.names.length; i++) {
-        str += i + 1 + '. ' + chartDrawer.names[i] + ' ' + '\n'
-    }
-    document.getElementById('line_name').innerHTML = str;
+    chartDrawer.focusOnRect();
 }

@@ -15,7 +15,24 @@ class ChartDrawer {
         this.json = null;
         this.coordinate = {};
         this.names = [];
+    }
+    addChart() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.json = JSON.parse(this.input.value);
+        canvas.width = this.leftBorder + this.rightBorder;
+        canvas.height = 0;
+        
+        this.fillRangesFullData();
+        this.getHeight();
+        this.createChart();
+        document.getElementById('headerCanvas').style.display = 'block';
 
+        if (typeof this.json == "object") {
+            document.getElementById('result').innerHTML = "";
+
+        } else {
+            document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+        }
     }
     nameSequence() {
         this.sequences = this.json.sequences;
@@ -25,11 +42,13 @@ class ChartDrawer {
         }
     }
     fillRangesFullData() {
+        this.nameSequence();
         this.rangesFullData = [];
         for (let i = 0; i < this.motifs.length; i++) {
             for (let j = 0; j < this.motifs[i].occurences.length; j++) {
                 for (let k = 0; k < this.motifs[i].occurences[j].ranges.length; k++) {
                     this.motifs[i].occurences[j].ranges[k].motif = this.motifs[i].motif;
+                    this.motifs[i].occurences[j].ranges[k].color = this.chooseColor(i);
                     this.motifs[i].occurences[j].ranges[k].sequenceName = this.motifs[i].occurences[j].sequence_name;
                     this.rangesFullData.push(this.motifs[i].occurences[j].ranges[k]);
                 }
@@ -45,37 +64,33 @@ class ChartDrawer {
             }
         }
     }
-    getHeight() {
-        if (this.json.sequences) {
-            canvas.height = this.marginTop + this.stepLine * (this.names.length + 1);
-
-        }
-        return canvas.height;
-    }
     createChart() {
+        this.paintLine();
+        this.setLineDescription();
         for (let i = 0; i < this.rangesFullData.length; i++) {
             for (let j = 0; j < this.names.length; j++) {
                 if (this.rangesFullData[i].sequenceName == this.names[j]) {
                     this.name = this.names[j];
-
-
                     this.long = (this.rightBorder - this.leftBorder) / this.rangesFullData[i].sequenceLenght;
+
                     if (this.rangesFullData[i].complementary == 1) {
                         this.long = (this.rightBorder - this.leftBorder) / this.rangesFullData[i].complementarySequenceLenght;
                     }
-                    this.ctx.fillStyle = "blue";
+
                     this.rects[i] = {};
                     this.rects[i].x = Math.ceil(this.rangesFullData[i].start * this.long + this.leftBorder);
                     this.rects[i].w = Math.floor((this.rangesFullData[i].end * this.long + this.leftBorder) - this.rects[i].x);
                     this.rects[i].w = this.rects[i].w >= this.minSizeRect ? this.rects[i].w : this.minSizeRect;
                     this.rects[i].h = this.rectHeight;
                     this.rects[i].y = this.marginTop - this.rectHeight + this.stepLine * this.name;
-                    this.ctx.rect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
-                    this.ctx.fill();
+                    this.rects[i].abrr = this.rangesFullData[i].color;
+                    this.ctx.fillStyle = this.rangesFullData[i].color;
+                    this.ctx.fillRect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
                 }
             }
         }
     }
+    
     paintLine() {
         for (let i = 0; i < this.names.length; i++) {
             this.ctx.beginPath();
@@ -84,24 +99,52 @@ class ChartDrawer {
             this.ctx.stroke();
         }
     }
-    addChart() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.json = JSON.parse(this.input.value);
-        canvas.width = this.leftBorder + this.rightBorder;
-        canvas.height = 0;
-        this.nameSequence();
-        this.fillRangesFullData();
-        this.getHeight();
-        this.paintLine();
-        setLineDescription();
-        this.createChart();
-        document.getElementById('headerCanvas').style.display = 'block';
-
-        if (typeof this.json == "object") {
-            document.getElementById('result').innerHTML = "";
-
+    setLineDescription() {
+        let str = "";
+        for (let i = 0; i < this.names.length; i++) {
+            str += i + 1 + '. ' + this.names[i] + ' ' + '\n'
+        }
+        document.getElementById('line_name').innerHTML = str;
+    }
+    chooseColor(id) {
+        if (id < this.motifColors.length) {
+            return this.motifColors[id];
+        } else if (id / this.motifColors.length < this.motifColors.length) {
+            return this.motifColors[Math.floor(id / this.motifColors.length)];
         } else {
-            document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+            this.chooseColor(Math.floor(id / this.motifColors.length));
+        }
+    }
+    getHeight() {
+        if (this.json.sequences) {
+            canvas.height = this.marginTop + this.stepLine * (this.names.length + 1);
+        }
+        return canvas.height;
+    }
+   /* titleText(i, x, y) { //создаем текст подсказки
+        let motif = json.motif,
+            value = json.occurences[i]['p-value'];
+
+        ctx.fillStyle = "rgb(0, 0, 0)";
+        ctx.font = "10pt Arial";
+        ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
+        ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
+    }*/
+
+    focusOnRect() {
+        for (let i = 0; i < this.rects.length; i++) {
+            if (this.coordinate.x + 5 >= this.rects[i].x && this.coordinate.x - 15 < this.rects[i].w + this.rects[i].x
+                && this.coordinate.y + 5 >= this.rects[i].y && this.coordinate.y - 5 <= this.rects[i].h + this.rects[i].y) {
+                let titleCenter = this.rects[i].w / 2 + this.rects[i].x;
+                let x = titleCenter - 50;
+                let w = (titleCenter + 50) - x;
+                let y = this.rects[i].y + 20;
+                let h = 40;
+
+                this.ctx.strokeRect(x, y, w, h);
+                this.ctx.clearRect(x, y, w, h);
+                //TitleText(i, x, y);
+            }
         }
     }
 }
