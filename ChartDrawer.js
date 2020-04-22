@@ -1,6 +1,10 @@
 class ChartDrawer {
     constructor(params) {
+        const self = this;
         this.input = params.input;
+        this.input.oninput = function () {
+            self.addChart();
+        }
         this.canvas = params.canvas;
         this.ctx = params.ctx;
         this.motifColors = params.motifColors;
@@ -16,23 +20,24 @@ class ChartDrawer {
         this.coordinate = {};
         this.names = [];
     }
+    
     addChart() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.json = JSON.parse(this.input.value);
-        canvas.width = this.leftBorder + this.rightBorder;
-        canvas.height = 0;
-        
-        this.fillRangesFullData();
-        this.getHeight();
-        this.createChart();
-        document.getElementById('headerCanvas').style.display = 'block';
-
-        if (typeof this.json == "object") {
+        try {
+            this.json = JSON.parse(this.input.value);
             document.getElementById('result').innerHTML = "";
+            canvas.width = this.leftBorder + this.rightBorder;
+            canvas.height = 0;
 
-        } else {
+            this.fillRangesFullData();
+            canvas.height = this.getHeight();
+            this.createChart();
+            document.getElementById('headerCanvas').style.display = 'block';
+        } catch (error) {
             document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
         }
+
+
     }
     nameSequence() {
         this.sequences = this.json.sequences;
@@ -90,7 +95,7 @@ class ChartDrawer {
             }
         }
     }
-    
+
     paintLine() {
         for (let i = 0; i < this.names.length; i++) {
             this.ctx.beginPath();
@@ -117,19 +122,18 @@ class ChartDrawer {
     }
     getHeight() {
         if (this.json.sequences) {
-            canvas.height = this.marginTop + this.stepLine * (this.names.length + 1);
+            return this.marginTop + this.stepLine * (this.names.length + 1);
         }
-        return canvas.height;
     }
-   /* titleText(i, x, y) { //создаем текст подсказки
-        let motif = json.motif,
-            value = json.occurences[i]['p-value'];
-
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.font = "10pt Arial";
-        ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
-        ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
-    }*/
+    /* titleText(i, x, y) { //создаем текст подсказки
+         let motif = json.motif,
+             value = json.occurences[i]['p-value'];
+ 
+         ctx.fillStyle = "rgb(0, 0, 0)";
+         ctx.font = "10pt Arial";
+         ctx.fillText('motif:' + ' ' + motif, x + 6, y + 17, sizeWidth * 9);
+         ctx.fillText('p-value:' + ' ' + value, x + 6, y + 32, sizeWidth * 9);
+     }*/
 
     focusOnRect() {
         for (let i = 0; i < this.rects.length; i++) {

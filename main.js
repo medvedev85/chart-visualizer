@@ -17,9 +17,7 @@ let params = {
 let chartDrawer = new ChartDrawer(params);
 
 //chartDrawer.input.onpaste
-chartDrawer.input.oninput = function () {
-    chartDrawer.addChart();
-}
+
 
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
