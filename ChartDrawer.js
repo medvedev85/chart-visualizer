@@ -1,10 +1,5 @@
 class ChartDrawer {
     constructor(params) {
-        const self = this;
-        this.input = params.input;
-        this.input.oninput = function () {
-            self.addChart();
-        }
         this.canvas = params.canvas;
         this.ctx = params.ctx;
         this.motifColors = params.motifColors;
@@ -15,10 +10,8 @@ class ChartDrawer {
         this.rectHeight = params.rectHeight;
         this.minSizeRect = params.minSizeRect;
         this.rightBorder = this.lineWidth + this.leftBorder;
-        this.rects = [];
-        this.json = null;
+        this.segments = params.segments;
         this.coordinate = {};
-        this.names = [];
     }
     
     addChart() {
@@ -44,29 +37,6 @@ class ChartDrawer {
         this.motifs = this.json.motifs;
         for (let i = 0; i < this.json.sequences.length; i++) {
             this.names[i] = this.json.sequences[i].name;
-        }
-    }
-    fillRangesFullData() {
-        this.nameSequence();
-        this.rangesFullData = [];
-        for (let i = 0; i < this.motifs.length; i++) {
-            for (let j = 0; j < this.motifs[i].occurences.length; j++) {
-                for (let k = 0; k < this.motifs[i].occurences[j].ranges.length; k++) {
-                    this.motifs[i].occurences[j].ranges[k].motif = this.motifs[i].motif;
-                    this.motifs[i].occurences[j].ranges[k].color = this.chooseColor(i);
-                    this.motifs[i].occurences[j].ranges[k].sequenceName = this.motifs[i].occurences[j].sequence_name;
-                    this.rangesFullData.push(this.motifs[i].occurences[j].ranges[k]);
-                }
-            }
-        }
-        for (let i = 0; i < this.rangesFullData.length; i++) {
-            for (let j = 0; j < this.sequences.length; j++) {
-                if (this.rangesFullData[i].sequenceName == this.sequences[j].name) {
-                    this.rangesFullData[i].index = j;
-                    this.rangesFullData[i].sequenceLenght = this.sequences[j].sequence.length;
-                    this.rangesFullData[i].complementarySequenceLenght = this.sequences[j].complementary_sequence.length;
-                }
-            }
         }
     }
     createChart() {
