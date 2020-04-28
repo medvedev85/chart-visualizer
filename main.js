@@ -1,20 +1,22 @@
 "use strict"
-let input = document.getElementById("json_input_id");
-input.oninput = setData;
+window.onload = function () {
+    let input = document.getElementById("json_input_id");
+    let result = 'result';
+    let params = {
+        canvas: document.getElementById("canvas"),
+        motifColors: ["blue", "red", "yellow", "pink", "green"],
+        leftBorder: 100,
+        lineWidth: 1000,
+        marginTop: 100,
+        stepLine: 50,
+        rectHeight: 15,
+        minSizeRect: 20
+    };
+    halper(input, params, result);
+}
 
-let params = {
-    canvas: document.getElementById("canvas"),
-    ctx: canvas.getContext("2d"),
-    motifColors: ["blue", "red", "yellow", "pink", "green"],
-    leftBorder: 100,
-    lineWidth: 1000,
-    marginTop: 100,
-    stepLine: 50,
-    rectHeight: 15,
-    minSizeRect: 20
-};
 
-function parser(inputData) {
+function parser(inputData, params) {
     let rects = [];
     for (let i = 0; i < inputData.motifs.length; i++) {
         for (let j = 0; j < inputData.motifs[i].occurences.length; j++) {
@@ -33,23 +35,27 @@ function parser(inputData) {
             }
         }
     }
-    params.segments = inputData.sequences;
+    console.log(params);
+    return params.segments = inputData.sequences;
 }
 
-function setData() {
-    let json = JSON.parse(input.value);
-    try {
-        parser(json);
-        document.getElementById('result').innerHTML = "";
-    } catch (error) {
-        document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+function halper(input, params, result) {
+    input.oninput = () => {
+        let json = JSON.parse(input.value);
+        try {
+            parser(json, params);
+            document.getElementById(result).innerHTML = "";
+        } catch (error) {
+            document.getElementById(result).innerHTML = " Поместите данные в формате JSON!";
+        }
     }
 }
 
+/*
 let chartDrawer = new ChartDrawer(params);
 
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
     chartDrawer.coordinate.y = e.offsetY;
     chartDrawer.focusOnRect();
-}
+}*/

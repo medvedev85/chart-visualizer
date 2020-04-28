@@ -1,6 +1,7 @@
 class ChartDrawer {
     constructor(params) {
         this.canvas = params.canvas;
+        this.ctx = this.canvas.getContext("2d");
         this.ctx = params.ctx;
         this.motifColors = params.motifColors;
         this.leftBorder = params.leftBorder;
