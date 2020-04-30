@@ -5,7 +5,7 @@ window.onload = function () {
     let result = document.getElementById('result');
     let params = {
         canvas: "canvas",
-        motifColors: ["blue", "red", "yellow", "pink", "green"],
+        colors: ["blue", "red", "yellow", "pink", "green"],
         leftBorder: 100,
         lineWidth: 1000,
         marginTop: 100,
@@ -18,15 +18,15 @@ window.onload = function () {
 
 function initChart(input, params, result) {
     input.oninput = () => {
-        try {
+        //try {
             let json = JSON.parse(input.value);
             parser(json, params);
             let chartDrawer = new ChartDrawer(params);
-            chartDrawer.tester();
+            chartDrawer.awayChart();
             result.innerHTML = "";
-        } catch (error) {
+        /*} catch (error) {
             result.innerHTML = " Поместите данные в формате JSON!";
-        }
+        }*/
     }
 }
 
