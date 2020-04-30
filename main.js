@@ -1,5 +1,6 @@
 "use strict"
 window.onload = function () {
+    canvas.height = 0;
     let input = document.getElementById("json_input_id");
     let result = document.getElementById('result');
     let params = {
@@ -15,11 +16,13 @@ window.onload = function () {
     initChart(input, params, result);
 }
 
-function initChart(input, params, result, chartDrawer) {
+function initChart(input, params, result) {
     input.oninput = () => {
         try {
             let json = JSON.parse(input.value);
             parser(json, params);
+            let chartDrawer = new ChartDrawer(params);
+            chartDrawer.tester();
             result.innerHTML = "";
         } catch (error) {
             result.innerHTML = " Поместите данные в формате JSON!";
@@ -28,7 +31,7 @@ function initChart(input, params, result, chartDrawer) {
 }
 
 /*
-let chartDrawer = new ChartDrawer(params);
+
 
 chartDrawer.canvas.onmousemove = function (e) {
     chartDrawer.coordinate.x = e.offsetX;
