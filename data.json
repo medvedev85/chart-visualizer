@@ -41,14 +41,14 @@
               "sequence_name":"0",
               "ranges":[
                  {
-                    "start":100,
-                    "end":108,
+                    "start":150,
+                    "end":158,
                     "p-value":1.0,
                     "complementary":0
                  },
                  {
-                    "start":0,
-                    "end":8,
+                    "start":6,
+                    "end":18,
                     "p-value":1.1,
                     "complementary":1
                  }
