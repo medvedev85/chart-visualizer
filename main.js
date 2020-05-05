@@ -29,12 +29,3 @@ function initChart(input, params, result) {
         }
     }
 }
-
-/*
-
-
-chartDrawer.canvas.onmousemove = function (e) {
-    chartDrawer.coordinate.x = e.offsetX;
-    chartDrawer.coordinate.y = e.offsetY;
-    chartDrawer.focusOnRect();
-}*/

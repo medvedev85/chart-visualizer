@@ -27,7 +27,6 @@ class ChartDrawer {
         this.canvas.height = this.getHeight();
         this.setLineDescription();
         this.selectColor();
-        //focusOnRect();
         document.getElementById('headerCanvas').style.display = 'block';
         for (let i = 0; i < this.segments.length; i++) {
             this.drawOneSegment(i);
@@ -45,14 +44,21 @@ class ChartDrawer {
             let long = (this.rightBorder - this.leftBorder) / this.segments[idSegment].sequence.length;
             let x = Math.ceil(this.segments[idSegment].rects[i].start * long + this.leftBorder);
             let w = Math.floor((this.segments[idSegment].rects[i].end * long + this.leftBorder) - x);
-            w = w >= this.minSizeRect ? w : this.minSizeRect;
+            w = Math.max(w, this.minSizeRect);
             let h = this.rectHeight;
             let y = this.marginTop - this.rectHeight + this.stepLine * idSegment;
-            y = this.segments[idSegment].rects[i].complementary != 1 ? y : y + this.rectHeight;
+            if (this.segments[idSegment].rects[i].complementary != 1) {
+                y += this.rectHeight;
+            }
             this.ctx.globalAlpha = 0.6;
             this.ctx.fillStyle = this.motifColors[this.segments[idSegment].rects[i].motif];
-            this.rects.push({ idSegment: idSegment, x: x, y: y, w: w, h: h });
+            this.rects.push({ idSegment, x, y, w, h });
+            this.rects = unique(this.rects);
             this.ctx.fillRect(x, y, w, h);
+        }
+
+        function unique(arr) {
+            return Array.from(new Set(arr));
         }
         console.log(this.rects);
     }
@@ -66,11 +72,9 @@ class ChartDrawer {
 
     selectColor() {
         for (let i = 0; i < this.segments.motifs.length; i++) {
-            if (i <= this.colors.length) {
-                this.motifColors[this.segments.motifs[i]] = this.colors[i];
-            } else {
-                this.motifColors[this.segments.motifs[i]] = this.colors[i % this.colors.length];
-            }
+            let motif = this.segments.motifs[i];
+            let colorId = i % this.colors.length;
+            this.motifColors[motif] = this.colors[colorId];
         }
     }
     getHeight() {
@@ -79,26 +83,37 @@ class ChartDrawer {
         }
     }
     focusOnRect() {
-        let focus = false;
         for (let i = 0; i < this.rects.length; i++) {
-            if (focus == false && this.coordinate.x + 5 >= this.rects[i].x && this.coordinate.x - 5 < this.rects[i].w + this.rects[i].x
-                && this.coordinate.y + 5 >= this.rects[i].y && this.coordinate.y - 5 <= this.rects[i].h + this.rects[i].y) {
+            let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
+            let mouseInsideRect = {};
+            let focus = false;
+            if (!focus && mouseInRect) {
                 let titleCenter = this.rects[i].w / 2 + this.rects[i].x;
                 let x = titleCenter - 80;
                 let w = (titleCenter + 80) - x;
                 let y = this.rects[i].y + 20;
                 let h = 100;
                 this.ctx.strokeRect(x, y, w, h);
-                this.ctx.clearRect(x+1, y, w-1, h);
+                this.ctx.clearRect(x + 1, y, w - 1, h);
                 focus = true;
-               
-            } else if (focus == true && this.coordinate.x + 5 < this.rects[i].x || this.coordinate.x - 15 > this.rects[i].w + this.rects[i].x
-                || this.coordinate.y + 5 < this.rects[i].y || this.coordinate.y - 5 > this.rects[i].h + this.rects[i].y) {
+                onFocusRect = {i, x, y, w, h};
+            } 
+            if (focus && onFocusRect) {
                 this.ctx.clearRect(0, this.marginTop - this.rectHeight + this.stepLine * this.rects[i].idSegment, this.rightBorder + this.leftBorder, this.stepLine * 2);
                 this.drawOneSegment(this.rects[i].idSegment);
                 this.drawOneSegment(this.rects[i].idSegment + 1);
                 focus = false;
             }
+        }
+
+        function checkIntersected(point, rect, margin = 5) {
+            let intersectedByX = point.x >= rect.x - margin &&
+                point.x < rect.x + rect.w + margin;
+
+            let intersectedByY = point.y >= rect.y - margin &&
+                point.y < rect.y + rect.h + margin;
+
+            return intersectedByX && intersectedByY;
         }
     }
 }
@@ -123,7 +138,7 @@ function parser(inputData, params) {
                 inputData.sequences[i].rects.push(rects[j]);
             }
         }
-    } console.log(inputData.sequences);
+    }
     return params.segments = inputData.sequences;
 
 }
