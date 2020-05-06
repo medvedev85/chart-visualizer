@@ -26,6 +26,8 @@ class ChartDrawer {
         this.canvas.width = this.leftBorder + this.rightBorder;
         this.canvas.height = this.getHeight();
         this.setLineDescription();
+        this.setRects();
+        //console.log(this.rects);
         this.selectColor();
         document.getElementById('headerCanvas').style.display = 'block';
         for (let i = 0; i < this.segments.length; i++) {
@@ -40,27 +42,41 @@ class ChartDrawer {
         this.ctx.lineTo(this.rightBorder, this.marginTop + this.stepLine * idSegment);
         this.ctx.stroke();
 
-        for (let i = 0; i < this.segments[idSegment].rects.length; i++) {
-            let long = (this.rightBorder - this.leftBorder) / this.segments[idSegment].sequence.length;
-            let x = Math.ceil(this.segments[idSegment].rects[i].start * long + this.leftBorder);
-            let w = Math.floor((this.segments[idSegment].rects[i].end * long + this.leftBorder) - x);
-            w = Math.max(w, this.minSizeRect);
-            let h = this.rectHeight;
-            let y = this.marginTop - this.rectHeight + this.stepLine * idSegment;
-            if (this.segments[idSegment].rects[i].complementary != 1) {
-                y += this.rectHeight;
+        let rectsSegment = this.rects.filter(function (item) {
+            if (item.idSegment == idSegment) {
+                return item;
             }
+        });
+
+        for (let i = 0; i < rectsSegment.length; i++) {
             this.ctx.globalAlpha = 0.6;
-            this.ctx.fillStyle = this.motifColors[this.segments[idSegment].rects[i].motif];
-            this.rects.push({ idSegment, x, y, w, h });
-            this.rects = unique(this.rects);
-            this.ctx.fillRect(x, y, w, h);
+            this.ctx.fillStyle = rectsSegment[i].color;
+            this.ctx.fillRect(rectsSegment[i].x, rectsSegment[i].y, rectsSegment[i].w, rectsSegment[i].h);
+        }
+    }
+
+    setRects() {
+        for (let i = 0; i < this.segments.length; i++) {
+            for (let j = 0; j < this.segments[i].rects.length; j++) {
+                let long = (this.rightBorder - this.leftBorder) / this.segments[i].sequence.length;
+                let motif = this.segments[i].rects[j].motif;
+                let color = this.motifColors[motif];
+                console.log(this.motifColors);
+                console.log(this.segments[i].rects[j].motif);
+                console.log(color);
+                let x = Math.ceil(this.segments[i].rects[j].start * long + this.leftBorder);
+                let w = Math.floor((this.segments[i].rects[j].end * long + this.leftBorder) - x);
+                w = Math.max(w, this.minSizeRect);
+                let h = this.rectHeight;
+                let y = this.marginTop - this.rectHeight + this.stepLine * i;
+                if (this.segments[i].rects[j].complementary != 1) {
+                    y += this.rectHeight;
+                }
+                let idSegment = i;
+                this.rects.push({ idSegment, color, x, y, w, h });
+            }
         }
 
-        function unique(arr) {
-            return Array.from(new Set(arr));
-        }
-        console.log(this.rects);
     }
     setLineDescription() {
         let str = "";
@@ -85,7 +101,6 @@ class ChartDrawer {
     focusOnRect() {
         for (let i = 0; i < this.rects.length; i++) {
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
-            let mouseInsideRect = {};
             let focus = false;
             if (!focus && mouseInRect) {
                 let titleCenter = this.rects[i].w / 2 + this.rects[i].x;
@@ -96,9 +111,8 @@ class ChartDrawer {
                 this.ctx.strokeRect(x, y, w, h);
                 this.ctx.clearRect(x + 1, y, w - 1, h);
                 focus = true;
-                onFocusRect = {i, x, y, w, h};
-            } 
-            if (focus && onFocusRect) {
+            }
+            if (focus && !mouseInRect) {
                 this.ctx.clearRect(0, this.marginTop - this.rectHeight + this.stepLine * this.rects[i].idSegment, this.rightBorder + this.leftBorder, this.stepLine * 2);
                 this.drawOneSegment(this.rects[i].idSegment);
                 this.drawOneSegment(this.rects[i].idSegment + 1);
@@ -140,5 +154,4 @@ function parser(inputData, params) {
         }
     }
     return params.segments = inputData.sequences;
-
 }
