@@ -50,7 +50,7 @@ class ChartDrawer {
 
         for (let i = 0; i < rectsSegment.length; i++) {
             this.ctx.globalAlpha = 0.6;
-            this.ctx.fillStyle = rectsSegment[i].color;
+            this.ctx.fillStyle = this.motifColors[rectsSegment[i].motif];
             this.ctx.fillRect(rectsSegment[i].x, rectsSegment[i].y, rectsSegment[i].w, rectsSegment[i].h);
         }
     }
@@ -60,10 +60,6 @@ class ChartDrawer {
             for (let j = 0; j < this.segments[i].rects.length; j++) {
                 let long = (this.rightBorder - this.leftBorder) / this.segments[i].sequence.length;
                 let motif = this.segments[i].rects[j].motif;
-                let color = this.motifColors[motif];
-                console.log(this.motifColors);
-                console.log(this.segments[i].rects[j].motif);
-                console.log(color);
                 let x = Math.ceil(this.segments[i].rects[j].start * long + this.leftBorder);
                 let w = Math.floor((this.segments[i].rects[j].end * long + this.leftBorder) - x);
                 w = Math.max(w, this.minSizeRect);
@@ -73,7 +69,7 @@ class ChartDrawer {
                     y += this.rectHeight;
                 }
                 let idSegment = i;
-                this.rects.push({ idSegment, color, x, y, w, h });
+                this.rects.push({ idSegment, motif, x, y, w, h });
             }
         }
 
@@ -111,8 +107,7 @@ class ChartDrawer {
                 this.ctx.strokeRect(x, y, w, h);
                 this.ctx.clearRect(x + 1, y, w - 1, h);
                 focus = true;
-            }
-            if (focus && !mouseInRect) {
+            } else if (focus && !mouseInRect) {
                 this.ctx.clearRect(0, this.marginTop - this.rectHeight + this.stepLine * this.rects[i].idSegment, this.rightBorder + this.leftBorder, this.stepLine * 2);
                 this.drawOneSegment(this.rects[i].idSegment);
                 this.drawOneSegment(this.rects[i].idSegment + 1);
