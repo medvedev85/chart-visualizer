@@ -23,6 +23,7 @@ function initChart(input, params, result) {
             parser(json, params);
             let chartDrawer = new ChartDrawer(params);
             chartDrawer.draw();
+           // chartDrawer.img.addEventListener
             result.innerHTML = "";
         
     }
