@@ -5,7 +5,9 @@ window.onload = function () {
     let result = document.getElementById('result');
     let params = {
         canvas: "canvas",
+        baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green"],
+        popUpSize: 90,
         leftBorder: 100,
         lineWidth: 1000,
         marginTop: 100,

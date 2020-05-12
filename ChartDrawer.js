@@ -3,48 +3,41 @@ class ChartDrawer {
         const self = this;
         this.canvas = document.getElementById(params.canvas);
         this.ctx = this.canvas.getContext("2d");
-        this.colors = params.colors;
-        this.leftBorder = params.leftBorder;
-        this.lineWidth = params.lineWidth;
-        this.marginTop = params.marginTop;
-        this.stepLine = params.stepLine;
-        this.rectHeight = params.rectHeight;
-        this.minSizeRect = params.minSizeRect;
-        this.rightBorder = this.lineWidth + this.leftBorder;
-        this.segments = params.segments;
+        this.params = params;
         this.coordinate = {};
         this.rects = [];
         this.motifColors = {};
-        this.allRects = [];
-        this.focus = false;
-        this.myRect;
         this.canvas.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
             self.coordinate.y = e.offsetY;
             self.focusOnRect();
-
         }
     }
 
     draw() {
-        this.canvas.width = this.leftBorder + this.rightBorder;
+        let {lineWidth, leftBorder, segments} = this.params;
+        let rightBorder = lineWidth + leftBorder;
+
+        this.canvas.width = leftBorder + rightBorder;
         this.canvas.height = this.getHeight();
         this.setLineDescription();
         this.setRects();
         this.selectColor();
         document.getElementById('headerCanvas').style.display = 'block';
-        for (let i = 0; i < this.segments.length; i++) {
+        for (let i = 0; i < segments.length; i++) {
             this.drawOneSegment(i);
         }
     }
 
     drawOneSegment(idSegment) {
+        let {baseColor, leftBorder, lineWidth, marginTop, stepLine} = this.params;
+        let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "rgb(0, 0, 0)";
+
+        ctx.fillStyle = baseColor;
         ctx.beginPath();
-        ctx.moveTo(this.leftBorder, this.marginTop + this.stepLine * idSegment);
-        ctx.lineTo(this.rightBorder, this.marginTop + this.stepLine * idSegment);
+        ctx.moveTo(leftBorder, marginTop + stepLine * idSegment);
+        ctx.lineTo(rightBorder, marginTop + stepLine * idSegment);
         ctx.stroke();
 
         let rectsSegment = this.rects.filter(function (item) {
@@ -54,88 +47,97 @@ class ChartDrawer {
         });
 
         for (let i = 0; i < rectsSegment.length; i++) {
-            ctx.globalAlpha = 0.6;
-            ctx.fillStyle = this.motifColors[rectsSegment[i].motif];
-            ctx.fillRect(rectsSegment[i].x, rectsSegment[i].y, rectsSegment[i].w, rectsSegment[i].h);
+            let {motif, x, y, w, h} = rectsSegment[i];
+            
+            ctx.fillStyle = this.motifColors[motif];
+            ctx.fillRect(x, y, w, h);
         }
     }
 
     setRects() {
-        let segments = this.segments;
+        let {segments, lineWidth, leftBorder, rectHeight, marginTop, stepLine, minSizeRect} = this.params;
+        let rightBorder = lineWidth + leftBorder;
 
         for (let idSegment = 0; idSegment < segments.length; idSegment++) {
             let { rects, sequence } = segments[idSegment];
 
             for (let j = 0; j < rects.length; j++) {
                 let { start, end, motif, complementary } = rects[j];
-                let long = (this.rightBorder - this.leftBorder) / sequence.length;
-                let x = Math.ceil(start * long + this.leftBorder);
-                let w = Math.floor((end * long + this.leftBorder) - x);
-                let h = this.rectHeight;
-                let y = this.marginTop - this.rectHeight + this.stepLine * idSegment;
+                let long = (rightBorder - leftBorder) / sequence.length;
+                let x = Math.ceil(start * long + leftBorder);
+                let w = Math.floor((end * long + leftBorder) - x);
+                let h = rectHeight;
+                let y = marginTop - rectHeight + stepLine * idSegment;
+                let focus = false;
 
-                w = Math.max(w, this.minSizeRect);
+                w = Math.max(w, minSizeRect);
 
                 if (complementary != 1) {
-                    y += this.rectHeight;
+                    y += rectHeight;
                 }
 
-                this.rects.push({ idSegment, motif, x, y, w, h });
+                this.rects.push({ idSegment, motif, x, y, w, h, focus });
             }
         }
     }
 
     setLineDescription() {
-        let segments = this.segments;
+        let segments = this.params.segments;
         let str = "";
 
-        for (let i = 0; i < segments.length; i++) {
-            str += i + 1 + '. ' + segments[i].name + ' ' + '\n';
+        for (let idSegment = 0; idSegment < segments.length; idSegment++) {
+            str += idSegment + 1 + '. ' + segments[idSegment].name + ' ' + '\n';
         }
 
         document.getElementById('line_name').innerHTML = str;
     }
 
     selectColor() {
-        let motifs = this.segments.motifs;
+        let {segments, colors} = this.params;
+        let motifs = segments.motifs;
+
         for (let i = 0; i < motifs.length; i++) {
             let motif = motifs[i];
-            let colorId = i % this.colors.length;
-            this.motifColors[motif] = this.colors[colorId];
+            let colorId = i % colors.length;
+
+            this.motifColors[motif] = colors[colorId];
         }
     }
 
     getHeight() {
-        if (this.segments) {
-            return this.marginTop + this.stepLine * (this.segments.length + 1);
+        let {segments, marginTop, stepLine} = this.params;
+
+        if (segments) {
+            return marginTop + stepLine * (segments.length + 1.5);
         }
     }
 
     focusOnRect() {
-        this.focus = false;
+        let {lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize} = this.params;
+        let rightBorder = lineWidth + leftBorder;
+
         for (let i = 0; i < this.rects.length; i++) {
+            let {idSegment, focus, x, y, w, h} = this.rects[i];
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
-            if (!this.focus && mouseInRect) {
-                let titleCenter = this.rects[i].w / 2 + this.rects[i].x;
-                let x = titleCenter - 80;
-                let w = (titleCenter + 80) - x;
-                let y = this.rects[i].y + 20;
-                let h = 100;
-                this.ctx.strokeRect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
-                this.ctx.fillStyle = this.motifColors[this.rects[i].motif];
-                this.ctx.fillRect(this.rects[i].x, this.rects[i].y, this.rects[i].w, this.rects[i].h);
+
+            if (mouseInRect) {
+                let titleCenter = w / 2 + x;
+                let popUpX = titleCenter - popUpSize;
+                let popUpW = (titleCenter + popUpSize) - popUpX;
+                let popUpY = y + stepLine / 2;
+                let popUpH = stepLine * 2;
                 this.ctx.strokeRect(x, y, w, h);
-                this.ctx.clearRect(x + 1, y, w - 1, h);
-                this.myRect = this.rects[i];
-                console.log(this.myRect);
-                this.focus = true;
+                this.ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
+                this.ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
+                this.rects[i].focus = true;
             }
-            if (this.focus && this.coordinate.x + 5 < this.myRect.x || this.coordinate.x - 15 > this.myRect.w + this.myRect.x
-                || this.coordinate.y + 5 < this.myRect.y || this.coordinate.y - 5 > this.myRect.h + this.myRect.y) {
-                this.ctx.clearRect(0, this.marginTop - this.rectHeight + this.stepLine * this.rects[i].idSegment, this.rightBorder + this.leftBorder, this.stepLine * 1);
-                this.drawOneSegment(this.rects[i].idSegment);
-                this.drawOneSegment(this.rects[i].idSegment + 1);
-                this.focus = false;
+
+            if (focus && !mouseInRect) {
+                this.ctx.clearRect(0, marginTop - 1 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+                this.drawOneSegment(idSegment);
+                this.drawOneSegment(idSegment + 1);
+                this.drawOneSegment(idSegment + 2);
+                this.rects[i].focus = false;
             }
         }
 
@@ -153,30 +155,35 @@ class ChartDrawer {
 
 function parser(inputData, params) {
     let rects = [];
-    inputData.sequences.motifs = [];
-    for (let i = 0; i < inputData.motifs.length; i++) {
-        let occurences = inputData.motifs[i].occurences;
+    let {motifs, sequences} = inputData;
+
+    sequences.motifs = [];
+
+    for (let i = 0; i < motifs.length; i++) {
+        let occurences = motifs[i].occurences;
 
         for (let j = 0; j < occurences.length; j++) {
             let ranges = occurences[j].ranges;
 
             for (let k = 0; k < ranges.length; k++) {
-                //let {motifs, sequenceName} = inputData.motifs[i].occurences[j].ranges[k];
+                ranges[k].motif = motifs[i].motif;
+                ranges[k].sequenceName = motifs[i].occurences[j].sequence_name;
+                rects.push(ranges[k]);
+            }
+        }
 
-                inputData.motifs[i].occurences[j].ranges[k].motif = inputData.motifs[i].motif;
-                inputData.motifs[i].occurences[j].ranges[k].sequenceName = inputData.motifs[i].occurences[j].sequence_name;
-                rects.push(inputData.motifs[i].occurences[j].ranges[k]);
-            }
-        }
-        inputData.sequences.motifs.push(inputData.motifs[i].motif);
+        sequences.motifs.push(motifs[i].motif);
     }
-    for (let i = 0; i < inputData.sequences.length; i++) {
-        inputData.sequences[i].rects = [];
+
+    for (let i = 0; i < sequences.length; i++) {
+        sequences[i].rects = [];
+
         for (let j = 0; j < rects.length; j++) {
-            if (inputData.sequences[i].name == rects[j].sequenceName) {
-                inputData.sequences[i].rects.push(rects[j]);
+            if (sequences[i].name == rects[j].sequenceName) {
+                sequences[i].rects.push(rects[j]);
             }
         }
     }
-    return params.segments = inputData.sequences;
+    
+    return params.segments = sequences;
 }
