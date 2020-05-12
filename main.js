@@ -1,7 +1,7 @@
 "use strict"
 window.onload = function () {
     canvas.height = 0;
-    let input = document.getElementById("json_input_id");
+    let input = document.getElementById("jsonInputId");
     let result = document.getElementById('result');
     let params = {
         canvas: "canvas",

@@ -81,6 +81,20 @@ class ChartDrawer {
         }
     }
 
+    setPopUpText(id) {
+        let {stepLine, popUpSize} = this.params;
+        let {x, y, w} = this.rects[id];
+        let element = document.getElementById('popUp');        
+        let titleCenter = w / 2 + x;
+        let fontLeft = titleCenter - popUpSize / 2 + 'px';
+        let fontTop = y + stepLine + 'px';
+
+        element.innerHTML = "тут будет текст";
+        element.style.display = 'block';
+        element.style.marginTop = fontTop;
+        element.style.marginLeft = fontLeft;
+    }
+
     setLineDescription() {
         let segments = this.params.segments;
         let str = "";
@@ -89,7 +103,7 @@ class ChartDrawer {
             str += idSegment + 1 + '. ' + segments[idSegment].name + ' ' + '\n';
         }
 
-        document.getElementById('line_name').innerHTML = str;
+        document.getElementById('lineName').innerHTML = str;
     }
 
     selectColor() {
@@ -108,16 +122,17 @@ class ChartDrawer {
         let {segments, marginTop, stepLine} = this.params;
 
         if (segments) {
-            return marginTop + stepLine * (segments.length + 1.5);
+            return marginTop + stepLine * (segments.length + 1.7);
         }
     }
 
     focusOnRect() {
-        let {lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize} = this.params;
+        let {segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize} = this.params;
         let rightBorder = lineWidth + leftBorder;
+        let ctx = this.ctx;
 
         for (let i = 0; i < this.rects.length; i++) {
-            let {idSegment, focus, x, y, w, h} = this.rects[i];
+            let {idSegment, motif,focus, x, y, w, h} = this.rects[i];
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
             if (mouseInRect) {
@@ -126,17 +141,25 @@ class ChartDrawer {
                 let popUpW = (titleCenter + popUpSize) - popUpX;
                 let popUpY = y + stepLine / 2;
                 let popUpH = stepLine * 2;
-                this.ctx.strokeRect(x, y, w, h);
-                this.ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
-                this.ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
+
+                ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = this.motifColors[motif];
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
+                ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
+                this.setPopUpText(i);
                 this.rects[i].focus = true;
             }
 
             if (focus && !mouseInRect) {
-                this.ctx.clearRect(0, marginTop - 1 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
-                this.drawOneSegment(idSegment);
-                this.drawOneSegment(idSegment + 1);
-                this.drawOneSegment(idSegment + 2);
+                ctx.clearRect(0, marginTop - 1 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+                for (let j = 0; j < 3; j++) {
+                    if (idSegment + j < segments.length) {
+                        this.drawOneSegment(idSegment + j);
+                    }
+                }
+                document.getElementById('popUp').style.display = 'none';
+                
                 this.rects[i].focus = false;
             }
         }

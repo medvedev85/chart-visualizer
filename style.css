@@ -1,4 +1,4 @@
-#json_input_id{
+#jsonInputId{
     width: 800px;
     height: 300px;
     word-break: break-word;
@@ -15,16 +15,21 @@
     font-weight: bolder;
 }
 
-#motif_locations{
+#motifLocations{
     margin-left: 55px;
 }
 
-#line_name_container{
+#lineNameContainer{
     position:absolute;
     margin-top: 70px;
 }
 
-#line_name{
+#lineName{
     line-height: 50px;
     white-space: pre-line;
+}
+
+#popUp{
+    position:absolute;
+    display: none;
 }
