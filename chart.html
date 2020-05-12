@@ -3,14 +3,27 @@
 
 <head>
     <meta charset="utf-8">
-    <script type="module" src="/main.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="ChartDrawer.js"></script>
+    <script src="main.js"></script>
     <title>Chart page</title>
 </head>
 
 <body>
-    <textarea id="json_input_id" style="width: 800px; height: 300px; word-break: break-word;"></textarea>
-    <span id="result"></span><br>
-    <canvas id="canvas">Your browser is not supported</canvas>
+    <textarea id="json_input_id"></textarea>
+    <span id="result"> Поместите данные в формате JSON!</span><br>
+    <div id="canvasContainer">
+        <div id="headerCanvas">
+            <span id="name">Name</span>
+            <span id="motif_locations">Motif Locations</span>
+        </div>
+        <div id="line_name_container">
+            <span id="line_name"></span>
+        </div>
+        <canvas id="canvas">Your browser is not supported</canvas>
+    </div>
+    <p>{ "sequences":[ { "name":"0", "sequence":"CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC", "complementary_sequence":"CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC" }, { "name":"1", "sequence":"ATGCAAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC", "complementary_sequence":"ATGCAAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC" }, { "name":"2", "sequence":"CCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC", "complementary_sequence":"CCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC" }, { "name":"3", "sequence":"ATGC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555AAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC", "complementary_sequence":"ATGCAAAAACC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC" } ], "motifs":[ { "motif":"HAHAHAHA", "occurences":[ { "sequence_name":"0", "ranges":[ { "start":100, "end":108, "p-value":1.0, "complementary":0 }, { "start":0, "end":8, "p-value":1.1, "complementary":1 } ] } ] }, { "motif":"NNNNTTTT", "occurences":[ { "sequence_name":"1", "ranges":[ { "start":150, "end":158, "p-value":1.0, "complementary":0 }, { "start":6, "end":48, "p-value":1.1, "complementary":1 } ] } ] }, { "motif":"BLABLABLA", "occurences":[ { "sequence_name":"3", "ranges":[ { "start":80, "end":98, "p-value":1.0, "complementary":0 }, { "start":20, "end":48, "p-value":1.1, "complementary":1 } ] }, { "sequence_name":"2", "ranges":[ { "start":110, "end":128, "p-value":1.0, "complementary":0 }, { "start":6, "end":8, "p-value":1.1, "complementary":1 } ] } ] }, { "motif":"AZAZAZAZA", "occurences":[ { "sequence_name":"2", "ranges":[ { "start":160, "end":180, "p-value":1.0, "complementary":0 }, { "start":8, "end":18, "p-value":1.1, "complementary":1 } ] }, { "sequence_name":"0", "ranges":[ { "start":90, "end":102, "p-value":1.0, "complementary":0 }, { "start":6, "end":28, "p-value":1.1, "complementary":1 } ] }, { "sequence_name":"1", "ranges":[ { "start":180, "end":198, "p-value":1.0, "complementary":0 }, { "start":36, "end":58, "p-value":1.1, "complementary":1 } ] } ] } ] }</p>
+
 </body>
 
 </html>

@@ -1,52 +1,32 @@
 "use strict"
-
-let input = document.getElementById("json_input_id");
-let params = {
-    canvasElementId: "canvas",
-    motifColors: ["blue", "red", "yellow", "pink", "green"],
-    sizeWidth: window.innerWidth / 100,
-    sizeHeight: window.innerHeight / 100
+window.onload = function () {
+    canvas.height = 0;
+    let input = document.getElementById("json_input_id");
+    let result = document.getElementById('result');
+    let params = {
+        canvas: "canvas",
+        baseColor: "rgb(0, 0, 0)",
+        colors: ["blue", "red", "yellow", "pink", "green"],
+        popUpSize: 90,
+        leftBorder: 100,
+        lineWidth: 1000,
+        marginTop: 100,
+        stepLine: 50,
+        rectHeight: 15,
+        minSizeRect: 20
+    };
+    initChart(input, params, result);
 }
 
-import {ChartDrawer} from './chart_modules/ChartDrawer.js';
-
-let chartDrawer = new ChartDrawer(params);
-
-input.oninput = function () {
-    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
-    chartDrawer.json = JSON.parse(input.value);
-    chartDrawer.nameSequence();
-    chartDrawer.fillRangesFullData();
-    getHeight();
-    createHeader();
-    chartDrawer.linePaint();
-    chartDrawer.setLineDescription();
-    chartDrawer.createChart();
-
-    if (typeof input == "object") {
-        document.getElementById('result').innerHTML = "";
-    } else {
-        document.getElementById('result').innerHTML = " Поместите данные в формате JSON!";
+function initChart(input, params, result) {
+    input.oninput = () => {
+        //try {
+            let json = JSON.parse(input.value);
+            parser(json, params);
+            let chartDrawer = new ChartDrawer(params);
+            chartDrawer.draw();
+           // chartDrawer.img.addEventListener
+            result.innerHTML = "";
+        
     }
-}
-
-chartDrawer.canvas.onmousemove = function (e) {
-    chartDrawer.coordinate.x = e.offsetX;
-    chartDrawer.coordinate.y = e.offsetY;
-    //chartDrawer.ctx.clearRect(0, 0, chartDrawer.canvas.width, chartDrawer.canvas.height);
-}
-
-canvas.width = window.innerWidth;
-canvas.height = 0;
-
-function getHeight() { //рассчитываем оптимальный размер
-    canvas.height = (chartDrawer.json.sequences) ? (1130 + (chartDrawer.json.sequences.length - 1) * 40) : 0;
-    return canvas.height;
-}
-
-function createHeader() {
-    chartDrawer.ctx.fillStyle = "rgb(0, 0, 0)";
-    chartDrawer.ctx.font = "bold 10pt Arial";
-    chartDrawer.ctx.fillText('Name', params.sizeWidth * 5, params.sizeHeight * 9, params.sizeWidth * 5);
-    chartDrawer.ctx.fillText('Motif Locations', params.sizeWidth * 17, params.sizeHeight * 9, params.sizeWidth * 15);
 }

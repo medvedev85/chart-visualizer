@@ -1,0 +1,30 @@
+#json_input_id{
+    width: 800px;
+    height: 300px;
+    word-break: break-word;
+}
+
+#canvasContainer{
+    position:relative;
+}
+
+#headerCanvas{
+    position:absolute;
+    display: none;
+    margin-top: 50px;
+    font-weight: bolder;
+}
+
+#motif_locations{
+    margin-left: 55px;
+}
+
+#line_name_container{
+    position:absolute;
+    margin-top: 70px;
+}
+
+#line_name{
+    line-height: 50px;
+    white-space: pre-line;
+}
