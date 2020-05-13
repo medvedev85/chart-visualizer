@@ -15,7 +15,7 @@ class ChartDrawer {
     }
 
     draw() {
-        let {lineWidth, leftBorder, segments} = this.params;
+        let { lineWidth, leftBorder, segments } = this.params;
         let rightBorder = lineWidth + leftBorder;
 
         this.canvas.width = leftBorder + rightBorder;
@@ -30,7 +30,7 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment) {
-        let {baseColor, leftBorder, lineWidth, marginTop, stepLine} = this.params;
+        let { baseColor, leftBorder, lineWidth, marginTop, stepLine } = this.params;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
@@ -47,15 +47,14 @@ class ChartDrawer {
         });
 
         for (let i = 0; i < rectsSegment.length; i++) {
-            let {motif, x, y, w, h} = rectsSegment[i];
-            
+            let { motif, x, y, w, h } = rectsSegment[i];
             ctx.fillStyle = this.motifColors[motif];
             ctx.fillRect(x, y, w, h);
         }
     }
 
     setRects() {
-        let {segments, lineWidth, leftBorder, rectHeight, marginTop, stepLine, minSizeRect} = this.params;
+        let { segments, lineWidth, leftBorder, rectHeight, marginTop, stepLine, minSizeRect } = this.params;
         let rightBorder = lineWidth + leftBorder;
 
         for (let idSegment = 0; idSegment < segments.length; idSegment++) {
@@ -79,12 +78,18 @@ class ChartDrawer {
                 this.rects.push({ idSegment, motif, x, y, w, h, focus });
             }
         }
+
+        sortByLong(this.rects);
+
+        function sortByLong(arr) {
+            arr.sort((a, b) => a.w < b.w ? 1 : -1);
+        }
     }
 
     setPopUpText(id) {
-        let {stepLine, popUpSize} = this.params;
-        let {x, y, w} = this.rects[id];
-        let element = document.getElementById('popUp');        
+        let { stepLine, popUpSize } = this.params;
+        let { x, y, w } = this.rects[id];
+        let element = document.getElementById('popUp');
         let titleCenter = w / 2 + x;
         let fontLeft = titleCenter - popUpSize / 2 + 'px';
         let fontTop = y + stepLine + 'px';
@@ -107,7 +112,7 @@ class ChartDrawer {
     }
 
     selectColor() {
-        let {segments, colors} = this.params;
+        let { segments, colors } = this.params;
         let motifs = segments.motifs;
 
         for (let i = 0; i < motifs.length; i++) {
@@ -119,7 +124,7 @@ class ChartDrawer {
     }
 
     getHeight() {
-        let {segments, marginTop, stepLine} = this.params;
+        let { segments, marginTop, stepLine } = this.params;
 
         if (segments) {
             return marginTop + stepLine * (segments.length + 1.7);
@@ -127,12 +132,12 @@ class ChartDrawer {
     }
 
     focusOnRect() {
-        let {segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize} = this.params;
+        let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize } = this.params;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
         for (let i = 0; i < this.rects.length; i++) {
-            let {idSegment, motif,focus, x, y, w, h} = this.rects[i];
+            let { idSegment, motif, focus, x, y, w, h } = this.rects[i];
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
             if (mouseInRect) {
@@ -159,7 +164,7 @@ class ChartDrawer {
                     }
                 }
                 document.getElementById('popUp').style.display = 'none';
-                
+
                 this.rects[i].focus = false;
             }
         }
@@ -178,7 +183,7 @@ class ChartDrawer {
 
 function parser(inputData, params) {
     let rects = [];
-    let {motifs, sequences} = inputData;
+    let { motifs, sequences } = inputData;
 
     sequences.motifs = [];
 
@@ -207,6 +212,6 @@ function parser(inputData, params) {
             }
         }
     }
-    
+
     return params.segments = sequences;
 }
