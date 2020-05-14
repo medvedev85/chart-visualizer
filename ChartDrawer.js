@@ -131,7 +131,66 @@ class ChartDrawer {
         }
     }
 
+    drawRects() {
+        let { popUpSize, stepLine } = this.params;
+        let rectList = this.focusRectList;
+        let ctx = this.ctx;
+        let completeRect = {};
+
+        completeRect.y = rectList[0].y;
+        completeRect.h = rectList[0].h;
+        completeRect.idSegment = rectList[0].idSegment;
+
+        completeRect.motif = rectList.map(rect => rect.motif);
+
+        if (rectList.length >= 2) {
+            rectList.sort((a, b) => a.x < b.x ? 1 : -1);
+            completeRect.x = rectList[0].x;
+
+            rectList.sort((a, b) => a.x + a.w > b.x + b.w ? 1 : -1);
+            completeRect.w = rectList[0].x + rectList[0].w - completeRect.x;
+
+            let { x, y, w, h } = completeRect;
+            let titleCenter = w / 2 + x;
+
+            completeRect.popUpX = titleCenter - popUpSize;
+            completeRect.popUpW = (titleCenter + popUpSize) - completeRect.popUpX;
+            completeRect.popUpY = y + stepLine / 2;
+            completeRect.popUpH = stepLine * 2;
+
+            ctx.fillRect(x, y, w, h);
+            
+        } else {
+            let { x, y, w, h } = completeRect;
+            let titleCenter = w / 2 + x;
+
+            completeRect.popUpX = titleCenter - popUpSize;
+            completeRect.popUpW = (titleCenter + popUpSize) - completeRect.popUpX;
+            completeRect.popUpY = y + stepLine / 2;
+            completeRect.popUpH = stepLine * 2;
+
+            this.ctx.fillRect(x, y, w, h);
+            console.log(completeRect);
+        }
+    }
+
+    drawRectsOld() {
+
+        let titleCenter = w / 2 + x;
+        let popUpX = titleCenter - popUpSize;
+        let popUpW = (titleCenter + popUpSize) - popUpX;
+        let popUpY = y + stepLine / 2;
+        let popUpH = stepLine * 2;
+
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = this.motifColors[motif];
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
+        ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
+    }
+
     focusOnRect() {
+        this.focusRectList = [];
         let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder, popUpSize } = this.params;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
@@ -141,19 +200,13 @@ class ChartDrawer {
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
             if (mouseInRect) {
-                let titleCenter = w / 2 + x;
-                let popUpX = titleCenter - popUpSize;
-                let popUpW = (titleCenter + popUpSize) - popUpX;
-                let popUpY = y + stepLine / 2;
-                let popUpH = stepLine * 2;
+                this.focusRectList.push(this.rects[i]);
 
-                ctx.strokeRect(x, y, w, h);
-                ctx.fillStyle = this.motifColors[motif];
-                ctx.fillRect(x, y, w, h);
-                ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
-                ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
                 this.setPopUpText(i);
                 this.rects[i].focus = true;
+
+                this.drawRects();
+
             }
 
             if (focus && !mouseInRect) {
