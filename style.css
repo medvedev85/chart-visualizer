@@ -31,5 +31,6 @@
 
 #popUp{
     position:absolute;
+    width: 500px;
     display: none;
 }

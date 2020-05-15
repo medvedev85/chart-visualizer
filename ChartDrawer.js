@@ -86,7 +86,8 @@ class ChartDrawer {
         }
     }
 
-    setPopUpText(y, titleCenter) {
+    setPopUpText(rect) {
+        let {y, titleCenter} = rect;
         let { stepLine, popUpSize } = this.params;
         let element = document.getElementById('popUp');
         let fontLeft = titleCenter - popUpSize / 2 + 'px';
@@ -129,28 +130,44 @@ class ChartDrawer {
         }
     }
 
-    drawPopUp(rect, titleCenter) {
+    drawPopUp(rect) {
         let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
         let { popUpX, popUpY, popUpW, popUpH, x, y, w, h, idSegment, motif } = rect;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
-        ctx.clearRect(0, marginTop - 1 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+        ctx.clearRect(0, marginTop - 5 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
         for (let j = 0; j < 3; j++) {
             if (idSegment + j < segments.length) {
                 this.drawOneSegment(idSegment + j);
             }
         }
 
-        if (motif) {} // дописать
+        if (motif.length > 1) {
+            let shift = 3;
 
-        ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = this.motifColors[motif[0]];
-        ctx.fillRect(x, y, w, h);
+            ctx.clearRect(x, y, w, h);
+
+            ctx.strokeRect(x + shift, y + shift, w, h);
+            ctx.fillStyle = this.motifColors[motif[0]];
+            ctx.fillRect(x + shift, y + shift, w, h);
+
+            for (let i = 1; i < motif.length; i++) {
+                ctx.strokeRect(x - shift, y - shift, w, h);
+                ctx.fillStyle = this.motifColors[motif[i]];
+                ctx.fillRect(x - shift, y - shift, w, h);
+            }
+
+        } else {
+            ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = this.motifColors[motif];
+            ctx.fillRect(x, y, w, h);
+        }
+
         ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
         ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
 
-        this.setPopUpText(y, titleCenter);
+        this.setPopUpText(rect);
     }
 
     mergeRects() {
@@ -168,9 +185,9 @@ class ChartDrawer {
         completeRect.h = rectList[0].h;
 
         completeRect.idSegment = rectList[0].idSegment;
+        completeRect.complementary = rectList[0].complementary;
 
         completeRect.motif = rectList.map(rect => rect.motif);
-        completeRect.colors = completeRect.motif.map(item => this.motifColors[item]);
 
         let { x, w, y } = completeRect;
         let titleCenter = w / 2 + x;
@@ -179,8 +196,9 @@ class ChartDrawer {
         completeRect.popUpW = Math.floor((titleCenter + popUpSize) - completeRect.popUpX);
         completeRect.popUpY = Math.floor(y + stepLine / 2);
         completeRect.popUpH = stepLine * 2;
+        completeRect.titleCenter = titleCenter;
 
-        this.drawPopUp(completeRect, titleCenter);
+        this.drawPopUp(completeRect);
     }
 
     focusOnRect() {
@@ -200,7 +218,7 @@ class ChartDrawer {
             }
 
             if (focus && !mouseInRect) {
-                ctx.clearRect(0, marginTop - 1 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+                ctx.clearRect(0, marginTop - 5 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
                 for (let j = 0; j < 3; j++) {
                     if (idSegment + j < segments.length) {
                         this.drawOneSegment(idSegment + j);
