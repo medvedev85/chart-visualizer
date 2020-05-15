@@ -87,16 +87,17 @@ class ChartDrawer {
     }
 
     setPopUpText(rect) {
-        let {y, titleCenter} = rect;
-        let { stepLine, popUpSize } = this.params;
+        let {y, titleCenter, h, w} = rect;
+        let popUpSize = this.params.popUpSize;
         let element = document.getElementById('popUp');
-        let fontLeft = titleCenter - popUpSize / 2 + 'px';
-        let fontTop = y + stepLine + 'px';
+        let fontLeft = titleCenter - popUpSize + 'px';
+        let fontTop = y + h + 'px';
 
-        element.innerHTML = "тут будет текст";
+        element.innerHTML = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco...";
         element.style.display = 'block';
         element.style.marginTop = fontTop;
         element.style.marginLeft = fontLeft;
+        element.style.width = popUpSize * 2 + 'px';
     }
 
     setLineDescription() {
