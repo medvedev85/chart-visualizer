@@ -32,6 +32,8 @@
 #popUp{
     position:absolute;
     font-size: small;
+    text-align: center;
+    word-wrap: break-word;
     padding-top: 9px;
     padding-left: 3px;
     height: 10px;

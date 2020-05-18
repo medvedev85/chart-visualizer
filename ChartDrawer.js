@@ -79,7 +79,7 @@ class ChartDrawer {
                     (strSequence.length - end == 2) ? strSequence.slice(strSequence.length - 2, strSequence) :
                         (strSequence.length - end == 1) ? strSequence.slice(strSequence.length - 1, strSequence) : "";
 
-                strSequence = startMotif + "<b>" + sequence.slice(start, end) + "</b>" + endMotif;
+                strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
 
                 w = Math.max(w, minSizeRect);
 
@@ -134,18 +134,31 @@ class ChartDrawer {
     }
 
     setPopUpText(rect) {
-        let { y, titleCenter, h } = rect;
+        let { y, titleCenter, h, motif, strSequence, p_value, } = rect;
         let popUpSize = this.params.popUpSize;
         let element = document.getElementById('popUp');
         let fontLeft = titleCenter - popUpSize + 'px';
         let fontTop = y + h + 'px';
+        let str = '';
+
+        if (motif.length < 2) {
+            element.style.width = popUpSize * 1.9 + 'px';
+            str = '<b>' + motif + '</b>' + '<br>' + strSequence + '<br>' + 'p_value:' + p_value;
+        } else {
+            element.style.width = popUpSize * 3.9 + 'px';
+            for (let i = 0; i < motif.length; i++) {
+                let endStr = (i < motif.length) ? '<br>' : '';
+                str = str + '<b>' + motif[i] + '</b>' + '<br>' + strSequence[i] + '<br>' + 'p_value:' + p_value[i] + endStr;
+            }
+        }
 
         element.style.display = 'block';
         element.style.marginTop = fontTop;
         element.style.marginLeft = fontLeft;
-        element.style.width = popUpSize * 2 + 'px';
-        element.innerHTML = "";
+        
+        element.innerHTML = str;
 
+        
 
     }
 
@@ -219,6 +232,8 @@ class ChartDrawer {
         completeRect.popUpH = stepLine * 2;
         completeRect.titleCenter = titleCenter;
 
+        completeRect.popUpW = (completeRect.motif.length > 1) ? completeRect.popUpW * 2 : completeRect.popUpW;
+
         this.drawPopUp(completeRect);
 
         console.log(completeRect);
@@ -248,9 +263,10 @@ class ChartDrawer {
                     }
                 }
 
+                this.rects[i].focus = false;
+
                 document.getElementById('popUp').style.display = 'none';
 
-                this.rects[i].focus = false;
             }
         }
 
