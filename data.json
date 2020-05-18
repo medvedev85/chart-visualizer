@@ -31,13 +31,13 @@
                   {
                      "start": 100,
                      "end": 108,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 0,
                      "end": 8,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -53,13 +53,13 @@
                   {
                      "start": 150,
                      "end": 158,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 6,
                      "end": 48,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -75,13 +75,13 @@
                   {
                      "start": 80,
                      "end": 98,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 20,
                      "end": 48,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -92,13 +92,13 @@
                   {
                      "start": 110,
                      "end": 128,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 6,
                      "end": 8,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -114,13 +114,13 @@
                   {
                      "start": 160,
                      "end": 180,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 8,
                      "end": 18,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -131,13 +131,13 @@
                   {
                      "start": 90,
                      "end": 102,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 6,
                      "end": 28,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]
@@ -148,13 +148,13 @@
                   {
                      "start": 130,
                      "end": 152,
-                     "p-value": 1.0,
+                     "p_value": 1.0,
                      "complementary": 0
                   },
                   {
                      "start": 36,
                      "end": 58,
-                     "p-value": 1.1,
+                     "p_value": 1.1,
                      "complementary": 1
                   }
                ]

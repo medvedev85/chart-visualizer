@@ -58,10 +58,10 @@ class ChartDrawer {
         let rightBorder = lineWidth + leftBorder;
 
         for (let idSegment = 0; idSegment < segments.length; idSegment++) {
-            let { rects, sequence } = segments[idSegment];
+            let { rects, sequence, complementary_sequence } = segments[idSegment];
 
             for (let j = 0; j < rects.length; j++) {
-                let { start, end, motif, complementary } = rects[j];
+                let { start, end, motif, complementary, p_value } = rects[j];
                 let long = (rightBorder - leftBorder) / sequence.length;
                 let x = Math.ceil(start * long + leftBorder);
                 let w = Math.floor((end * long + leftBorder) - x);
@@ -69,13 +69,28 @@ class ChartDrawer {
                 let y = marginTop - rectHeight + stepLine * idSegment;
                 let focus = false;
 
+                let strSequence = (complementary == 1) ? complementary_sequence : sequence;
+
+                let startMotif = (start > 3) ? strSequence.slice(start - 3, start) :
+                    (start == 2) ? strSequence.slice(start - 2, start) :
+                        (start == 1) ? strSequence.slice(start - 1, start) : "";
+
+                let endMotif = (strSequence.length > end + 3) ? strSequence.slice(end, end + 3) :
+                    (strSequence.length - end == 2) ? strSequence.slice(strSequence.length - 2, strSequence) :
+                        (strSequence.length - end == 1) ? strSequence.slice(strSequence.length - 1, strSequence) : "";
+
+                strSequence = startMotif + "<b>" + sequence.slice(start, end) + "</b>" + endMotif;
+
                 w = Math.max(w, minSizeRect);
 
                 if (complementary != 1) {
                     y += rectHeight;
                 }
 
-                this.rects.push({ idSegment, motif, x, y, w, h, focus });
+                this.rects.push({
+                    idSegment, motif, x, y, w, h, focus, strSequence,
+                    complementary, p_value
+                });
             }
         }
 
@@ -84,20 +99,6 @@ class ChartDrawer {
         function sortByLong(arr) {
             arr.sort((a, b) => a.w < b.w ? 1 : -1);
         }
-    }
-
-    setPopUpText(rect) {
-        let {y, titleCenter, h, w} = rect;
-        let popUpSize = this.params.popUpSize;
-        let element = document.getElementById('popUp');
-        let fontLeft = titleCenter - popUpSize + 'px';
-        let fontTop = y + h + 'px';
-
-        element.innerHTML = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco...";
-        element.style.display = 'block';
-        element.style.marginTop = fontTop;
-        element.style.marginLeft = fontLeft;
-        element.style.width = popUpSize * 2 + 'px';
     }
 
     setLineDescription() {
@@ -125,10 +126,27 @@ class ChartDrawer {
 
     getHeight() {
         let { segments, marginTop, stepLine } = this.params;
+        let bottomBorder = stepLine * 1.6;
 
         if (segments) {
-            return marginTop + stepLine * (segments.length + 1.7);
+            return marginTop + stepLine * (segments.length) + bottomBorder;
         }
+    }
+
+    setPopUpText(rect) {
+        let { y, titleCenter, h } = rect;
+        let popUpSize = this.params.popUpSize;
+        let element = document.getElementById('popUp');
+        let fontLeft = titleCenter - popUpSize + 'px';
+        let fontTop = y + h + 'px';
+
+        element.style.display = 'block';
+        element.style.marginTop = fontTop;
+        element.style.marginLeft = fontLeft;
+        element.style.width = popUpSize * 2 + 'px';
+        element.innerHTML = "";
+
+
     }
 
     drawPopUp(rect) {
@@ -189,6 +207,8 @@ class ChartDrawer {
         completeRect.complementary = rectList[0].complementary;
 
         completeRect.motif = rectList.map(rect => rect.motif);
+        completeRect.p_value = rectList.map(rect => rect.p_value);
+        completeRect.strSequence = rectList.map(rect => rect.strSequence);
 
         let { x, w, y } = completeRect;
         let titleCenter = w / 2 + x;
@@ -200,6 +220,8 @@ class ChartDrawer {
         completeRect.titleCenter = titleCenter;
 
         this.drawPopUp(completeRect);
+
+        console.log(completeRect);
     }
 
     focusOnRect() {
@@ -215,16 +237,17 @@ class ChartDrawer {
             if (mouseInRect) {
                 this.focusRectList.push(this.rects[i]);
                 this.rects[i].focus = true;
-
             }
 
             if (focus && !mouseInRect) {
                 ctx.clearRect(0, marginTop - 5 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+
                 for (let j = 0; j < 3; j++) {
                     if (idSegment + j < segments.length) {
                         this.drawOneSegment(idSegment + j);
                     }
                 }
+
                 document.getElementById('popUp').style.display = 'none';
 
                 this.rects[i].focus = false;
