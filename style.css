@@ -30,12 +30,15 @@
 }
 
 #popUp{
-    position:absolute;
+    position: absolute;
+    background-color: white;
+    border: 4px double black;
     font-size: small;
     text-align: center;
+    vertical-align: middle;
     word-wrap: break-word;
-    padding-top: 9px;
-    padding-left: 3px;
-    height: 10px;
+    padding: 3px;
+    min-height:100px;
+    height:auto;
     display: none;
 }

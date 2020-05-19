@@ -20,13 +20,14 @@ window.onload = function () {
 
 function initChart(input, params, result) {
     input.oninput = () => {
-        //try {
+        try {
             let json = JSON.parse(input.value);
             parser(json, params);
             let chartDrawer = new ChartDrawer(params);
             chartDrawer.draw();
-           // chartDrawer.img.addEventListener
             result.innerHTML = "";
-        
+        } catch {
+            result.innerHTML = " Поместите данные в формате JSON!";
+        }
     }
 }

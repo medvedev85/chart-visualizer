@@ -20,10 +20,13 @@ class ChartDrawer {
 
         this.canvas.width = leftBorder + rightBorder;
         this.canvas.height = this.getHeight();
+        
         this.setLineDescription();
         this.setRects();
         this.selectColor();
+
         document.getElementById('headerCanvas').style.display = 'block';
+
         for (let i = 0; i < segments.length; i++) {
             this.drawOneSegment(i);
         }
@@ -126,26 +129,26 @@ class ChartDrawer {
 
     getHeight() {
         let { segments, marginTop, stepLine } = this.params;
-        let bottomBorder = stepLine * 1.6;
 
         if (segments) {
-            return marginTop + stepLine * (segments.length) + bottomBorder;
+            return marginTop + stepLine * (segments.length);
         }
     }
 
     setPopUpText(rect) {
+        let indent = 5;
         let { y, titleCenter, h, motif, strSequence, p_value, } = rect;
         let popUpSize = this.params.popUpSize;
         let element = document.getElementById('popUp');
         let fontLeft = titleCenter - popUpSize + 'px';
-        let fontTop = y + h + 'px';
+        let fontTop = indent + y + h + 'px';
         let str = '';
 
         if (motif.length < 2) {
-            element.style.width = popUpSize * 1.9 + 'px';
+            element.style.width = popUpSize * 2 + 'px';
             str = '<b>' + motif + '</b>' + '<br>' + strSequence + '<br>' + 'p_value:' + p_value;
         } else {
-            element.style.width = popUpSize * 3.9 + 'px';
+            element.style.width = popUpSize * 4 + 'px';
             for (let i = 0; i < motif.length; i++) {
                 let endStr = (i < motif.length) ? '<br>' : '';
                 str = str + '<b>' + motif[i] + '</b>' + '<br>' + strSequence[i] + '<br>' + 'p_value:' + p_value[i] + endStr;
@@ -155,25 +158,22 @@ class ChartDrawer {
         element.style.display = 'block';
         element.style.marginTop = fontTop;
         element.style.marginLeft = fontLeft;
-        
+
         element.innerHTML = str;
 
-        
+
 
     }
 
     drawPopUp(rect) {
-        let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
-        let { popUpX, popUpY, popUpW, popUpH, x, y, w, h, idSegment, motif } = rect;
+        let { lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
+        let { x, y, w, h, idSegment, motif } = rect;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
+        let bitsRect = 5;
 
-        ctx.clearRect(0, marginTop - 5 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
-        for (let j = 0; j < 3; j++) {
-            if (idSegment + j < segments.length) {
-                this.drawOneSegment(idSegment + j);
-            }
-        }
+        ctx.clearRect(0, marginTop - bitsRect - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine);
+        this.drawOneSegment(idSegment);
 
         if (motif.length > 1) {
             let shift = 3;
@@ -196,14 +196,10 @@ class ChartDrawer {
             ctx.fillRect(x, y, w, h);
         }
 
-        ctx.strokeRect(popUpX, popUpY, popUpW, popUpH);
-        ctx.clearRect(popUpX + 1, popUpY, popUpW - 1, popUpH);
-
         this.setPopUpText(rect);
     }
 
     mergeRects() {
-        let { popUpSize, stepLine } = this.params;
         let rectList = this.focusRectList;
         let completeRect = {};
 
@@ -223,50 +219,35 @@ class ChartDrawer {
         completeRect.p_value = rectList.map(rect => rect.p_value);
         completeRect.strSequence = rectList.map(rect => rect.strSequence);
 
-        let { x, w, y } = completeRect;
+        let { x, w } = completeRect;
         let titleCenter = w / 2 + x;
 
-        completeRect.popUpX = Math.floor(titleCenter - popUpSize);
-        completeRect.popUpW = Math.floor((titleCenter + popUpSize) - completeRect.popUpX);
-        completeRect.popUpY = Math.floor(y + stepLine / 2);
-        completeRect.popUpH = stepLine * 2;
         completeRect.titleCenter = titleCenter;
 
-        completeRect.popUpW = (completeRect.motif.length > 1) ? completeRect.popUpW * 2 : completeRect.popUpW;
-
         this.drawPopUp(completeRect);
-
-        console.log(completeRect);
+        
     }
 
     focusOnRect() {
         this.focusRectList = [];
-        let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
+        let { lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
         for (let i = 0; i < this.rects.length; i++) {
-            let { idSegment, focus } = this.rects[i];
+            let { idSegment } = this.rects[i];
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
             if (mouseInRect) {
                 this.focusRectList.push(this.rects[i]);
-                this.rects[i].focus = true;
             }
 
-            if (focus && !mouseInRect) {
-                ctx.clearRect(0, marginTop - 5 - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine * 3);
+            if (!mouseInRect) {
+                let bitsRect = 5;
 
-                for (let j = 0; j < 3; j++) {
-                    if (idSegment + j < segments.length) {
-                        this.drawOneSegment(idSegment + j);
-                    }
-                }
-
-                this.rects[i].focus = false;
-
+                ctx.clearRect(0, marginTop - bitsRect - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine);
+                this.drawOneSegment(idSegment);
                 document.getElementById('popUp').style.display = 'none';
-
             }
         }
 
