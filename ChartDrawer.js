@@ -20,7 +20,7 @@ class ChartDrawer {
 
         this.canvas.width = leftBorder + rightBorder;
         this.canvas.height = this.getHeight();
-        
+
         this.setLineDescription();
         this.setRects();
         this.selectColor();
@@ -99,8 +99,33 @@ class ChartDrawer {
 
         sortByLong(this.rects);
 
+        for (let idSegment = 0; idSegment < segments.length; idSegment++) {
+            this.changeSizeRects(idSegment);
+        }
+
         function sortByLong(arr) {
             arr.sort((a, b) => a.w < b.w ? 1 : -1);
+        }
+    }
+
+    changeSizeRects(id) {
+        let { leftBorder, minSizeRect, lineWidth, rectHeight } = this.params;
+        let step = leftBorder + minSizeRect - 1;
+        let border = leftBorder + lineWidth;
+
+        while (step < border) {
+            for (let i = 0; i < this.rects.length; i++) {
+                let { idSegment, x, w, h } = this.rects[i];
+                let amount = 0;
+
+                if (id == idSegment && x < step && x + w > step) {
+                    amount++;
+                    this.rects[i].h = rectHeight + 30 * amount;
+                }
+              //  console.log (amount);
+            }
+            
+            step = step + minSizeRect - 1;
         }
     }
 
@@ -225,7 +250,7 @@ class ChartDrawer {
         completeRect.titleCenter = titleCenter;
 
         this.drawPopUp(completeRect);
-        
+
     }
 
     focusOnRect() {
