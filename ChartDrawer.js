@@ -250,7 +250,6 @@ class ChartDrawer {
         completeRect.titleCenter = titleCenter;
 
         this.drawPopUp(completeRect);
-
     }
 
     focusOnRect() {
