@@ -53,6 +53,7 @@ class ChartDrawer {
             let { motif, x, y, w, h } = rectsSegment[i];
             ctx.fillStyle = this.motifColors[motif];
             ctx.fillRect(x, y, w, h);
+            ctx.strokeRect(x, y, w, h);
         }
     }
 
@@ -99,33 +100,35 @@ class ChartDrawer {
 
         sortByLong(this.rects);
 
-        for (let idSegment = 0; idSegment < segments.length; idSegment++) {
-            this.changeSizeRects(idSegment);
-        }
+        this.changeSizeRects();
+
 
         function sortByLong(arr) {
             arr.sort((a, b) => a.w < b.w ? 1 : -1);
         }
     }
 
-    changeSizeRects(id) {
-        let { leftBorder, minSizeRect, lineWidth, rectHeight } = this.params;
-        let step = leftBorder + minSizeRect - 1;
-        let border = leftBorder + lineWidth;
+    changeSizeRects() { //проверял идею, потом перепишу в нормальном виде)
+        let { rectHeight } = this.params;
+        let rects = this.rects;
 
-        while (step < border) {
-            for (let i = 0; i < this.rects.length; i++) {
-                let { idSegment, x, w, h } = this.rects[i];
-                let amount = 0;
-
-                if (id == idSegment && x < step && x + w > step) {
-                    amount++;
-                    this.rects[i].h = rectHeight + 30 * amount;
+        for (let i = 0; i < rects.length; i++) {
+            let point = rects[i].x
+            for (let j = 0; j < rects.length; j++) {
+                if ((rects[i].idSegment == rects[j].idSegment &&
+                    rects[i].complementary == rects[j].complementary &&
+                     rects[i].x > rects[j].x && 
+                     rects[i].x < rects[j].x + rects[j].w && 
+                     rects[i].w > rects[j].w) ||
+                     (rects[i].idSegment == rects[j].idSegment &&
+                        rects[i].complementary == rects[j].complementary &&
+                        rects[i].x + rects[i].w > rects[j].x && 
+                        rects[i].x + rects[i].w < rects[j].x + rects[j].w && 
+                        rects[i].w > rects[j].w)) {
+                    rects[i].h = rects[j].h + rectHeight/2;
+                    rects[i].y = rects[i].complementary == 1 ? rects[j].y - rectHeight/2 : rects[i].y;
                 }
-              //  console.log (amount);
             }
-            
-            step = step + minSizeRect - 1;
         }
     }
 
@@ -185,9 +188,6 @@ class ChartDrawer {
         element.style.marginLeft = fontLeft;
 
         element.innerHTML = str;
-
-
-
     }
 
     drawPopUp(rect) {
