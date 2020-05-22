@@ -113,22 +113,28 @@ class ChartDrawer {
         let rects = this.rects;
 
         for (let i = 0; i < rects.length; i++) {
-            let point = rects[i].x
             for (let j = 0; j < rects.length; j++) {
-                if ((rects[i].idSegment == rects[j].idSegment &&
-                    rects[i].complementary == rects[j].complementary &&
-                     rects[i].x > rects[j].x && 
-                     rects[i].x < rects[j].x + rects[j].w && 
-                     rects[i].w > rects[j].w) ||
-                     (rects[i].idSegment == rects[j].idSegment &&
-                        rects[i].complementary == rects[j].complementary &&
-                        rects[i].x + rects[i].w > rects[j].x && 
-                        rects[i].x + rects[i].w < rects[j].x + rects[j].w && 
-                        rects[i].w > rects[j].w)) {
-                    rects[i].h = rects[j].h + rectHeight/2;
-                    rects[i].y = rects[i].complementary == 1 ? rects[j].y - rectHeight/2 : rects[i].y;
+                let intersection = checkIntersected(rects[i], rects[j]);
+
+                if (intersection) {
+                    rects[i].h = rects[j].h + rectHeight / 2;
+                    rects[i].y = rects[i].complementary == 1 ? rects[j].y - rectHeight / 2 : rects[i].y;
                 }
             }
+        }
+
+        function checkIntersected(rect1, rect2) {
+            let intersectedByLine = rect1.idSegment == rect2.idSegment &&
+                rect1.complementary == rect2.complementary;
+
+            let intersectedByX = rect1.x > rect2.x &&
+                rect1.x < rect2.x + rect2.w && rect1.w > rect2.w ||
+                rect1.x < rect2.x + rect2.w && rect1.w > rect2.w;
+
+            let intersectedByW = rect1.x < rect2.x + rect2.w && rect1.w > rect2.w ||
+                rect1.x + rect1.w > rect2.x && rect1.w < rect2.x + rect2.w && rect1.w > rect2.w
+
+            return intersectedByLine && intersectedByX && intersectedByW;
         }
     }
 

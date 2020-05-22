@@ -16,6 +16,13 @@ window.onload = function () {
         minSizeRect: 20
     };
     initChart(input, params, result);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'data.json', false);
+    xhr.send();
+    parser(json, params);
+    let chartDrawer = new ChartDrawer(params);
+    chartDrawer.draw();
 }
 
 function initChart(input, params, result) {

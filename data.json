@@ -19,6 +19,26 @@
          "name": "3",
          "sequence": "ATGC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555AAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC",
          "complementary_sequence": "ATGCAAAAACC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC"
+      },
+      {
+         "name": "4",
+         "sequence": "CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC",
+         "complementary_sequence": "CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC"
+      },
+      {
+         "name": "no name",
+         "sequence": "ATGCAAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC",
+         "complementary_sequence": "ATGCAAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC"
+      },
+      {
+         "name": "5",
+         "sequence": "CCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC",
+         "complementary_sequence": "CCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC"
+      },
+      {
+         "name": "6",
+         "sequence": "ATGC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555AAAAACCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC",
+         "complementary_sequence": "ATGCAAAAACC55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555CCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCCATGCCCCCCCCCCC"
       }
    ],
    "motifs": [
@@ -144,6 +164,145 @@
             },
             {
                "sequence_name": "1",
+               "ranges": [
+                  {
+                     "start": 130,
+                     "end": 152,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 36,
+                     "end": 58,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         "motif": "KFKFJGJJK",
+         "occurences": [
+            {
+               "sequence_name": "5",
+               "ranges": [
+                  {
+                     "start": 100,
+                     "end": 108,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 0,
+                     "end": 8,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         "motif": "TKTKGJGMGKF",
+         "occurences": [
+            {
+               "sequence_name": "6",
+               "ranges": [
+                  {
+                     "start": 150,
+                     "end": 158,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 6,
+                     "end": 48,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         "motif": "KGKGJFMFKF",
+         "occurences": [
+            {
+               "sequence_name": "2",
+               "ranges": [
+                  {
+                     "start": 80,
+                     "end": 98,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 20,
+                     "end": 48,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            },
+            {
+               "sequence_name": "4",
+               "ranges": [
+                  {
+                     "start": 110,
+                     "end": 128,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 6,
+                     "end": 8,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         "motif": "FJJFGJMGKB",
+         "occurences": [
+            {
+               "sequence_name": "4",
+               "ranges": [
+                  {
+                     "start": 160,
+                     "end": 180,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 8,
+                     "end": 18,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            },
+            {
+               "sequence_name": "4",
+               "ranges": [
+                  {
+                     "start": 90,
+                     "end": 102,
+                     "p_value": 1.0,
+                     "complementary": 0
+                  },
+                  {
+                     "start": 6,
+                     "end": 28,
+                     "p_value": 1.1,
+                     "complementary": 1
+                  }
+               ]
+            },
+            {
+               "sequence_name": "2",
                "ranges": [
                   {
                      "start": 130,
