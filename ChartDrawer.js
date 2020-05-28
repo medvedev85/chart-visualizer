@@ -1,12 +1,15 @@
 class ChartDrawer {
     constructor(params) {
         const self = this;
+        this.rectCluster = 10;
         this.canvas = document.getElementById(params.canvas);
         this.ctx = this.canvas.getContext("2d");
         this.params = params;
+        this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
         this.rects = [];
         this.motifColors = {};
+        this.rectFocus = {focus: false, id: null};
         this.canvas.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
             self.coordinate.y = e.offsetY;
@@ -58,7 +61,7 @@ class ChartDrawer {
     }
 
     setRects() {
-        let { segments, lineWidth, leftBorder, rectHeight, marginTop, stepLine, minSizeRect } = this.params;
+        let { segments, lineWidth, leftBorder, marginTop, stepLine, minSizeRect } = this.params;
         let rightBorder = lineWidth + leftBorder;
 
         for (let idSegment = 0; idSegment < segments.length; idSegment++) {
@@ -69,8 +72,8 @@ class ChartDrawer {
                 let long = (rightBorder - leftBorder) / sequence.length;
                 let x = Math.ceil(start * long + leftBorder);
                 let w = Math.floor((end * long + leftBorder) - x);
-                let h = rectHeight;
-                let y = marginTop - rectHeight + stepLine * idSegment;
+                let h = this.rectHeight;
+                let y = marginTop - h + stepLine * idSegment;
                 let focus = false;
 
                 let strSequence = (complementary == 1) ? complementary_sequence : sequence;
@@ -88,7 +91,7 @@ class ChartDrawer {
                 w = Math.max(w, minSizeRect);
 
                 if (complementary != 1) {
-                    y += rectHeight;
+                    y += this.rectHeight;
                 }
 
                 this.rects.push({ idSegment, motif, x, y, w, h, focus, strSequence, complementary });
@@ -106,9 +109,8 @@ class ChartDrawer {
     }
 
     changeSizeRects() {
-        let { rectHeight } = this.params;
+        let rectHeight = this.rectHeight;
         let rects = this.rects;
-        console.log(rects);
 
         for (let i = 0; i < rects.length; i++) {
             for (let j = 0; j < rects.length; j++) {
@@ -117,7 +119,6 @@ class ChartDrawer {
                 if (intersection) {
                     rects[i].h = rects[j].h + rectHeight / 2;
                     rects[i].y = rects[i].complementary == 1 ? rects[j].y - rectHeight / 2 : rects[i].y;
-                    console.log('321');
                 }
             }
         }
@@ -195,15 +196,17 @@ class ChartDrawer {
         element.innerHTML = str;
     }
 
-    drawPopUp(rect) {
-        let { lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
-        let { x, y, w, h, idSegment, motif } = rect;
+    cleaner(idSegment) {
+        let { lineWidth, marginTop, stepLine, leftBorder } = this.params;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
-        let bitsRect = 5;
 
-        ctx.clearRect(0, marginTop - bitsRect - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine);
-        this.drawOneSegment(idSegment);
+        ctx.clearRect(0, marginTop + stepLine * idSegment - stepLine / 2, rightBorder + leftBorder, stepLine);
+    }
+
+    drawPopUp(rect) {
+        let { x, y, w, h, motif } = rect;
+        let ctx = this.ctx;
 
         if (motif.length > 1) {
             let shift = 3;
@@ -259,23 +262,19 @@ class ChartDrawer {
 
     focusOnRect() {
         this.focusRectList = [];
-        let { segments, lineWidth, marginTop, rectHeight, stepLine, leftBorder } = this.params;
-        let rightBorder = lineWidth + leftBorder;
-        let ctx = this.ctx;
+        let { segments } = this.params;
 
         for (let i = 0; i < this.rects.length; i++) {
-            let { idSegment, focus } = this.rects[i];
+            let { idSegment } = this.rects[i];
             let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
             if (mouseInRect) {
                 this.focusRectList.push(this.rects[i]);
-                this.rects[i].focus = true;
+                this.rectFocus[focus] = true;
             }
 
-            if (focus && !mouseInRect) { //поправить!
-                let bitsRect = 5;
-
-                ctx.clearRect(0, marginTop - rectHeight + stepLine * idSegment, rightBorder + leftBorder, stepLine);
+            if (this.rectFocus[focus] && !mouseInRect) {
+                this.cleaner(idSegment);
                 this.drawOneSegment(idSegment);
                 document.getElementById('popUp').style.display = 'none';
 
@@ -284,6 +283,7 @@ class ChartDrawer {
                         this.drawOneSegment(idSegment + j);
                     }
                 }
+                //this.rectFocus.focus = false;
             }
         }
 

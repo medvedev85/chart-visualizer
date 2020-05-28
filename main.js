@@ -12,7 +12,6 @@ window.onload = function () {
         lineWidth: 1000,
         marginTop: 100,
         stepLine: 50,
-        rectHeight: 10,
         minSizeRect: 20
     };
     initChart(input, params, result);
