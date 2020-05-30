@@ -9,7 +9,7 @@ class ChartDrawer {
         this.coordinate = {};
         this.rects = [];
         this.motifColors = {};
-        this.rectFocus = {focus: false, id: null};
+        this.focusRectList = [];
         this.canvas.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
             self.coordinate.y = e.offsetY;
@@ -75,6 +75,7 @@ class ChartDrawer {
                 let h = this.rectHeight;
                 let y = marginTop - h + stepLine * idSegment;
                 let focus = false;
+                let id = j;
 
                 let strSequence = (complementary == 1) ? complementary_sequence : sequence;
 
@@ -94,7 +95,7 @@ class ChartDrawer {
                     y += this.rectHeight;
                 }
 
-                this.rects.push({ idSegment, motif, x, y, w, h, focus, strSequence, complementary });
+                this.rects.push({ id, idSegment, motif, x, y, w, h, focus, strSequence, complementary });
             }
         }
 
@@ -249,7 +250,6 @@ class ChartDrawer {
         completeRect.complementary = rectList[0].complementary;
 
         completeRect.motif = rectList.map(rect => rect.motif);
-        //completeRect.p_value = rectList.map(rect => rect.p_value);
         completeRect.strSequence = rectList.map(rect => rect.strSequence);
 
         let { x, w } = completeRect;
@@ -261,34 +261,56 @@ class ChartDrawer {
     }
 
     focusOnRect() {
-        this.focusRectList = [];
-        let { segments } = this.params;
 
         for (let i = 0; i < this.rects.length; i++) {
-            let { idSegment } = this.rects[i];
-            let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
 
-            if (mouseInRect) {
+            let mouseInRect = checkIntersected(this.coordinate, this.rects[i]);
+            let unique = this.focusRectList.lenght ? checkUnique(this.rects[i]) : true;
+
+            if (mouseInRect && unique) {
                 this.focusRectList.push(this.rects[i]);
-                this.rectFocus[focus] = true;
             }
 
-            if (this.rectFocus[focus] && !mouseInRect) {
+            /* if (!mouseInRect) {
+                 this.cleaner(idSegment);
+                 this.drawOneSegment(idSegment);
+                 document.getElementById('popUp').style.display = 'none';
+ 
+                 for (let j = 0; j < 1; j++) {
+                     if (idSegment + j < segments.length) {
+                         this.drawOneSegment(idSegment + j);
+                     }
+                 }
+                 //this.rectFocus.focus = false;
+             }*/
+        }
+        for (let j = 0; j < this.focusRectList.length; j++) {
+            let mouseInRect = checkIntersected(this.coordinate, this.focusRectList[j]);
+            let { idSegment } = this.focusRectList[j];
+
+            if (!mouseInRect) {
                 this.cleaner(idSegment);
                 this.drawOneSegment(idSegment);
                 document.getElementById('popUp').style.display = 'none';
-
-                for (let j = 0; j < 1; j++) {
-                    if (idSegment + j < segments.length) {
-                        this.drawOneSegment(idSegment + j);
-                    }
-                }
-                //this.rectFocus.focus = false;
+                this.drawOneSegment(idSegment)
             }
         }
 
         if (this.focusRectList.length) {
             this.mergeRects();
+        }
+
+        function checkUnique(rect) {
+            let unique = true;
+
+            for (let k = 0; k < this.focusRectList.length; k++) {
+                
+                if (this.focusRectList[k].id == rect.id) {
+                    unique = false;
+                }
+                
+            }
+            return unique;
         }
 
         function checkIntersected(point, rect, margin = 5) {
@@ -315,16 +337,16 @@ function parser(inputData, params) {
         for (let j = 0; j < occurrences.length; j++) {
             let { ranges, complementary_ranges, sequence_name } = occurrences[j];
             let fullRanges = ranges ? ranges : complementary_ranges;
-            
+
             for (let k = 0; k < fullRanges.length; k++) {
                 fullRanges[k].complementary = ranges ? 1 : 0;
                 fullRanges[k].motif = motif;
                 fullRanges[k].sequenceName = sequence_name;
                 rects.push(fullRanges[k]);
-               // console.log(fullRanges[k]);
+                // console.log(fullRanges[k]);
             }
         }
-        
+
 
         sequences.motifs.push(motifs[i].motif);
     }
