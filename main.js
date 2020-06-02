@@ -7,6 +7,7 @@ window.onload = function () {
         canvas: "canvas",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
+        visibleLine: 100,
         popUpSize: 90,
         leftBorder: 100,
         lineWidth: 1000,
@@ -33,11 +34,16 @@ window.onload = function () {
 function initChart(input, params, result) {
     input.oninput = () => {
         //try {
-            let json = JSON.parse(input.value);
-            parser(json, params);
-            let chartDrawer = new ChartDrawer(params);
+        let json = JSON.parse(input.value);
+        let worker = new Worker('worker.js');
+
+        worker.postMessage(json, params);
+
+        worker.addEventListener('message', function (e) {
+            let chartDrawer = new ChartDrawer(e.data);
             chartDrawer.draw();
             result.innerHTML = "";
+        }, false);
         /*} catch {
             result.innerHTML = " Поместите данные в формате JSON!";
         }*/
