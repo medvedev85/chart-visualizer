@@ -19,14 +19,14 @@ class ChartDrawer {
         }
     }
 
-    draw(idSegment, filled) {
+    draw(idSegment) {
         let { lineWidth, leftBorder, visibleLines, segments } = this.params;
         this.catalogue = [];
         this.currentPage = idSegment;
         let rightBorder = lineWidth + leftBorder;
         let end = idSegment + visibleLines;
         let turn = 0;
-
+        let filledLines = segments.filledLines;
         this.canvas.width = leftBorder + rightBorder;
         this.canvas.height = this.getHeight();
 
@@ -36,12 +36,13 @@ class ChartDrawer {
 
         this.ctx.translate(0.5, 0.5);
 
-        if (filled) {
-            let filledLines = segments.filledLines;
+        if (this.clean) {
             
-            for (let i = 0; i < visibleLines; i++, turn++) {
-                this.catalogue.push(filledLines[i]);
-                this.drawOneSegment(filledLines[i], turn);
+            
+            for (; idSegment < end; idSegment++, turn++) {
+                this.catalogue.push(filledLines[idSegment]);
+                this.drawOneSegment(filledLines[idSegment], turn);
+                console.log(this.filledLines);
             }
         } else {
             for (; idSegment < end; idSegment++, turn++) {
@@ -50,6 +51,7 @@ class ChartDrawer {
             }
         }
 
+        
         this.ctx.translate(-0.5, -0.5);
         
     }
@@ -82,7 +84,7 @@ class ChartDrawer {
 
             inter.sort();
             let position = (inter.indexOf(i) + 1) / 2;
-            console.log(inter, position)
+            //console.log(inter, position)
 
             let long = (rightBorder - leftBorder) / sequence.length;
             let x = Math.ceil(start * long + leftBorder);
@@ -221,7 +223,7 @@ class ChartDrawer {
 
                 if (mouseInRect) {
                     
-                    console.log("jhgfcghjk");
+                    //console.log("jhgfcghjk");
                 }
 
                 if (!mouseInRect) {

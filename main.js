@@ -27,7 +27,7 @@ function initChart(params) {
 function removeEmpty() {
     chartDrawer.clean = (chartDrawer.clean) ? false : true;
     let lastPage = chartDrawer.currentPage;
-
+    console.log(lastPage);
     chartDrawer.draw(lastPage, chartDrawer.clean);
 }
 

@@ -11,11 +11,10 @@
 </head>
 
 <body>
-
+    <input type="button" onclick="removeEmpty()" value="remove empty">
+    <input type="button" onclick="paginator(false)" value="previous">
+    <input type="button" onclick="paginator(true)" value="next">
     <div id="canvasContainer">
-        <input type="button" onclick="removeEmpty()" value="remove empty">
-        <input type="button" onclick="paginator(false)" value="previous">
-        <input type="button" onclick="paginator(true)" value="next">
         <div id="headerCanvas">
             <span id="name">Name</span>
             <span id="motifLocations">Motif Locations</span>
