@@ -7,7 +7,7 @@ window.onload = () => {
         canvas: "canvas",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
-        visibleLines: 100, //max: 1308
+        visibleLines: 1, //max: 1308
         popUpSize: 90,
         leftBorder: 100,
         lineWidth: 1000,
@@ -21,13 +21,13 @@ window.onload = () => {
 function initChart(params) {
     parser(data, params);
     chartDrawer = new ChartDrawer(params);
-    chartDrawer.draw(0);
+    chartDrawer.draw(29);
 }
 
 function removeEmpty() {
     chartDrawer.clean = (chartDrawer.clean) ? false : true;
     let lastPage = chartDrawer.currentPage;
-    console.log(lastPage);
+
     chartDrawer.draw(lastPage, chartDrawer.clean);
 }
 
@@ -35,7 +35,6 @@ function paginator(direction) {
     let { visibleLines } = chartDrawer.params;
     let currentPage = chartDrawer.currentPage;
     let clean = chartDrawer.clean;
-
     let nextPage = (direction) ? currentPage + visibleLines :
     (currentPage > visibleLines) ? currentPage - visibleLines : 0;
 

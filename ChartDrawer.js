@@ -50,7 +50,6 @@ class ChartDrawer {
                 this.drawOneSegment(idSegment, turn);
             }
         }
-
         
         this.ctx.translate(-0.5, -0.5);
         
@@ -81,10 +80,17 @@ class ChartDrawer {
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, motif, complementary, inter } = rects[i];
+            
+            inter = Array.from(new Set(inter));
 
-            inter.sort();
+            if (inter.length) {
+                for (let j = 0; j < inter.length; j++) {
+                    rects[j].h = this.rectHeight + this.rectHeight * j;
+                }
+            }
+
             let position = (inter.indexOf(i) + 1) / 2;
-            //console.log(inter, position)
+            console.log(inter, inter.indexOf(i)+1);
 
             let long = (rightBorder - leftBorder) / sequence.length;
             let x = Math.ceil(start * long + leftBorder);
@@ -98,7 +104,7 @@ class ChartDrawer {
 
             rects[i].x = x;
             rects[i].w = w;
-            rects[i].h = h;
+            rects[i].h = (rects[i].h) ? rects[i].h : h;
             rects[i].y = y;
 
             let strSequence = (complementary == 1) ? complementary_sequence : sequence;
@@ -121,6 +127,7 @@ class ChartDrawer {
             let { x, y, w, h } = rects[j];
 
             ctx.strokeRect(x, y, w, h);
+            //console.log(rects);
         }
 
         function sortByLong(arr) {
@@ -135,7 +142,6 @@ class ChartDrawer {
         }
 
         for (let i = 0; i < rects.length; i++) {
-
             for (let j = 0; j < rects.length; j++) {
                 let intersection = findIntersections(rects[i], rects[j]);
                 let start;
@@ -146,9 +152,18 @@ class ChartDrawer {
                         start = rects[i].start;
                         end = rects[j].end
                         intersectedRects.push({ start, end });
-                        rects[i].inter.push(j, i);
-                        rects[j].inter.push(i, j);
+                        rects[i].inter.push(i);
+                        rects[j].inter.push(i);
+                        rects[i].inter.push(j);
+                        rects[j].inter.push(j);
                         break;
+                   /* case "left":
+                        start = rects[j].start;
+                        end = rects[i].end
+                        intersectedRects.push({ start, end });
+                        rects[i].inter.push(j);
+                        rects[j].inter.push(j);
+                        break;*/
                     case "inside":
                         start = rects[i].start;
                         end = rects[i].end
@@ -168,6 +183,8 @@ class ChartDrawer {
 
             if (layer && rect1.start > rect2.start && rect1.start < rect2.end) {
                 return "right";
+            } else if (layer && rect1.start < rect2.start && rect1.end < rect2.start) {
+                return "left";
             } else if (layer && rect1.start > rect2.start && rect1.end < rect2.end) {
                 return "inside";
             } else if (layer && rect1.start < rect2.start && rect1.end > rect2.end) {
