@@ -11,13 +11,14 @@
 </head>
 
 <body>
-    <input type="button" onclick="chartDrawer.draw(0)" value="Считать кроликов!">
-    <input type="button" onclick="chartDrawer.draw(153, 2)" value="Пересчитать кроликов!">
-    <input type="button" onclick="chartDrawer.cleaner()" value="Не считать">
+
     <div id="canvasContainer">
+        <input type="button" onclick="removeEmpty()" value="remove empty">
+        <input type="button" onclick="paginator(false)" value="previous">
+        <input type="button" onclick="paginator(true)" value="next">
         <div id="headerCanvas">
             <span id="name">Name</span>
-            <span id="motifLocations">Motif Locations<input type="button" onclick="chartDrawer.cleaner()" value="Не считать"></span>
+            <span id="motifLocations">Motif Locations</span>
         </div>
         <div id="lineNameContainer">
             <span id="lineName"></span>
@@ -26,4 +27,5 @@
         <canvas id="canvas">Your browser is not supported</canvas>
     </div>
 </body>
+
 </html>

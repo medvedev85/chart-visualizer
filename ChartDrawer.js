@@ -9,6 +9,8 @@ class ChartDrawer {
         this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
         this.motifColors = {};
+        this.currentPage = 0;
+        this.clean = false;
 
         this.canvas.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
@@ -20,6 +22,7 @@ class ChartDrawer {
     draw(idSegment, filled) {
         let { lineWidth, leftBorder, visibleLines, segments } = this.params;
         this.catalogue = [];
+        this.currentPage = idSegment;
         let rightBorder = lineWidth + leftBorder;
         let end = idSegment + visibleLines;
         let turn = 0;
@@ -76,14 +79,29 @@ class ChartDrawer {
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, motif, complementary, inter } = rects[i];
+
+            inter.sort();
+            let position = (inter.indexOf(i) + 1) / 2;
+            console.log(inter, position)
+
             let long = (rightBorder - leftBorder) / sequence.length;
             let x = Math.ceil(start * long + leftBorder);
             let w = Math.floor((end * long + leftBorder) - x);
-            let h = this.rectHeight + this.rectHeight * inter.length / 2;
+            let h = this.rectHeight + this.rectHeight * position;
             let y = (complementary == 1) ? marginTop - this.rectHeight + stepLine * turn : marginTop - h + stepLine * turn;
+
+            if (complementary == 1) {
+                y += this.rectHeight;
+            }
+
+            rects[i].x = x;
+            rects[i].w = w;
+            rects[i].h = h;
+            rects[i].y = y;
+
             let strSequence = (complementary == 1) ? complementary_sequence : sequence;
 
-            let startMotif = (start > 3) ? strSequence.slice(start - 3, start) :
+            let startMotif = (start > 3) ? strSequence.slice(start - 3, start) : //не лишнее!
                 (start == 2) ? strSequence.slice(start - 2, start) :
                     (start == 1) ? strSequence.slice(start - 1, start) : "";
 
@@ -93,33 +111,19 @@ class ChartDrawer {
 
             strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
 
-            if (complementary == 1) {
-                y += this.rectHeight;
-            }
-
             ctx.fillStyle = this.motifColors[motif];
             ctx.fillRect(x, y, w, h);
         }
 
         for (let j = 0; j < rects.length; j++) {
-            let { start, end, complementary, inter } = rects[j];
-            let long = (rightBorder - leftBorder) / sequence.length;
-            let x = Math.ceil(start * long + leftBorder);
-            let w = Math.floor((end * long + leftBorder) - x);
-            let h = this.rectHeight + this.rectHeight * inter.length / 2;
-            let y = (complementary == 1) ? marginTop - this.rectHeight + stepLine * turn : marginTop - h + stepLine * turn;
-
-            if (complementary == 1) {
-                y += this.rectHeight;
-            }
+            let { x, y, w, h } = rects[j];
 
             ctx.strokeRect(x, y, w, h);
         }
 
         function sortByLong(arr) {
-            arr.sort((a, b) => a.w || a.h < b.w || b.h ? 1 : -1);
+            arr.sort((a, b) => a.h < b.h ? 1 : -1);
         }
-        console.log(rects);
     }
 
     breakRects(idSegment) {
@@ -129,7 +133,6 @@ class ChartDrawer {
         }
 
         for (let i = 0; i < rects.length; i++) {
-            //rects[i].inter = [];
 
             for (let j = 0; j < rects.length; j++) {
                 let intersection = findIntersections(rects[i], rects[j]);
@@ -137,25 +140,19 @@ class ChartDrawer {
                 let end;
 
                 switch (intersection) {
-                    case 1:
+                    case "right":
                         start = rects[i].start;
                         end = rects[j].end
                         intersectedRects.push({ start, end });
-                        rects[i].inter.push(j);
+                        rects[i].inter.push(j, i);
+                        rects[j].inter.push(i, j);
                         break;
-                    case 2:
-                        start = rects[j].start;
-                        end = rects[i].end
-                        intersectedRects.push({ start, end });
-                        rects[j].startFocus = end;
-                        rects[i].endFocus = start;
-                        break;
-                    case 3:
+                    case "inside":
                         start = rects[i].start;
                         end = rects[i].end
                         intersectedRects.push({ start, end });
                         break;
-                    case 4:
+                    case "outside":
                         start = rects[j].start;
                         end = rects[j].end
                         intersectedRects.push({ start, end });
@@ -167,15 +164,13 @@ class ChartDrawer {
         function findIntersections(rect1, rect2) {
             let layer = rect1.complementary == rect2.complementary;
 
-            if (layer && rect1.start > rect2.start && rect1.start < rect2.end) { //rect1 пересекает rect2 и уходит вправо
-                return 1;
-            } else if (layer && rect1.start < rect2.start && rect1.end > rect2.start) { //rect1 пересекает rect2 и уходит влево
-                return 2;
-            } else if (layer && rect1.start > rect2.start && rect1.end < rect2.end) { //rect1 находится внутри rect2
-                return 3;
-            } else if (layer && rect1.start < rect2.start && rect1.end > rect2.end) { //rect1 включает в себя rect2
-                return 4;
-            } else { //не пересекаются
+            if (layer && rect1.start > rect2.start && rect1.start < rect2.end) {
+                return "right";
+            } else if (layer && rect1.start > rect2.start && rect1.end < rect2.end) {
+                return "inside";
+            } else if (layer && rect1.start < rect2.start && rect1.end > rect2.end) {
+                return "outside";
+            } else {
                 return false;
             }
         }
