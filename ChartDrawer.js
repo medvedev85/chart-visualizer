@@ -9,19 +9,19 @@ class ChartDrawer {
         this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
         this.motifColors = {};
-        this.currentPage = 0;
         this.clean = false;
 
         this.canvas.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
             self.coordinate.y = e.offsetY;
-            self.focusOnRect();
+            self.focusOnSegments();
         }
     }
 
     draw(idSegment) {
         let { lineWidth, leftBorder, visibleLines, segments } = this.params;
         this.catalogue = [];
+        this.motifsOnPage = [];
         this.currentPage = idSegment;
         let rightBorder = lineWidth + leftBorder;
         let end = idSegment + visibleLines;
@@ -34,15 +34,10 @@ class ChartDrawer {
 
         document.getElementById('headerCanvas').style.display = 'block';
 
-        this.ctx.translate(0.5, 0.5);
-
         if (this.clean) {
-            
-            
             for (; idSegment < end; idSegment++, turn++) {
                 this.catalogue.push(filledLines[idSegment]);
                 this.drawOneSegment(filledLines[idSegment], turn);
-                console.log(this.filledLines);
             }
         } else {
             for (; idSegment < end; idSegment++, turn++) {
@@ -50,25 +45,19 @@ class ChartDrawer {
                 this.drawOneSegment(idSegment, turn);
             }
         }
-        
-        this.ctx.translate(-0.5, -0.5);
-        
-    }
-
-    cleaner() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     drawOneSegment(idSegment, turn) {
-        //console.log(this.catalogue[idSegment]);
         let { baseColor, leftBorder, lineWidth, marginTop, stepLine } = this.params;
         let { rects, sequence, complementary_sequence } = this.params.segments[idSegment];
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
-        this.params.segments[idSegment].intersectedRects = [];
         this.setLineDescription();
+
         this.breakRects(idSegment);
+
+        this.ctx.translate(0.5, 0.5);
 
         ctx.fillStyle = baseColor;
         ctx.beginPath();
@@ -76,26 +65,12 @@ class ChartDrawer {
         ctx.lineTo(rightBorder, marginTop + stepLine * turn);
         ctx.stroke();
 
-        sortByLong(rects);
-
         for (let i = 0; i < rects.length; i++) {
-            let { start, end, motif, complementary, inter } = rects[i];
-            
-            inter = Array.from(new Set(inter));
-
-            if (inter.length) {
-                for (let j = 0; j < inter.length; j++) {
-                    rects[j].h = this.rectHeight + this.rectHeight * j;
-                }
-            }
-
-            let position = (inter.indexOf(i) + 1) / 2;
-            console.log(inter, inter.indexOf(i)+1);
-
+            let { start, end, motif, complementary, currentHeight } = rects[i];
             let long = (rightBorder - leftBorder) / sequence.length;
             let x = Math.ceil(start * long + leftBorder);
             let w = Math.floor((end * long + leftBorder) - x);
-            let h = this.rectHeight + this.rectHeight * position;
+            let h = this.rectHeight + this.rectHeight * currentHeight * 0.5;
             let y = (complementary == 1) ? marginTop - this.rectHeight + stepLine * turn : marginTop - h + stepLine * turn;
 
             if (complementary == 1) {
@@ -104,7 +79,7 @@ class ChartDrawer {
 
             rects[i].x = x;
             rects[i].w = w;
-            rects[i].h = (rects[i].h) ? rects[i].h : h;
+            rects[i].h = h;
             rects[i].y = y;
 
             let strSequence = (complementary == 1) ? complementary_sequence : sequence;
@@ -119,80 +94,48 @@ class ChartDrawer {
 
             strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
 
+            let rect = rects[i];
+            this.motifsOnPage.push({ motif, rect });
+
             ctx.fillStyle = this.motifColors[motif];
+            ctx.globalAlpha = 0.8;
             ctx.fillRect(x, y, w, h);
+            ctx.globalAlpha = 1;
         }
 
         for (let j = 0; j < rects.length; j++) {
             let { x, y, w, h } = rects[j];
 
             ctx.strokeRect(x, y, w, h);
-            //console.log(rects);
+            ctx.lineWidth = 1;
         }
 
-        function sortByLong(arr) {
-            arr.sort((a, b) => a.h < b.h ? 1 : -1);
-        }
+        this.ctx.translate(-0.5, -0.5);
     }
 
     breakRects(idSegment) {
-        let { rects, intersectedRects } = this.params.segments[idSegment];
-        for (let i = 0; i < rects.length; i++) {
-            rects[i].inter = [];
-        }
+        let { rects } = this.params.segments[idSegment];
+
+        rects.sort((a, b) => a.start > b.start ? 1 : -1);
 
         for (let i = 0; i < rects.length; i++) {
+            let { start, end, complementary } = rects[i];
+            let currentHeight = 0;
+
             for (let j = 0; j < rects.length; j++) {
-                let intersection = findIntersections(rects[i], rects[j]);
-                let start;
-                let end;
-
-                switch (intersection) {
-                    case "right":
-                        start = rects[i].start;
-                        end = rects[j].end
-                        intersectedRects.push({ start, end });
-                        rects[i].inter.push(i);
-                        rects[j].inter.push(i);
-                        rects[i].inter.push(j);
-                        rects[j].inter.push(j);
-                        break;
-                   /* case "left":
-                        start = rects[j].start;
-                        end = rects[i].end
-                        intersectedRects.push({ start, end });
-                        rects[i].inter.push(j);
-                        rects[j].inter.push(j);
-                        break;*/
-                    case "inside":
-                        start = rects[i].start;
-                        end = rects[i].end
-                        intersectedRects.push({ start, end });
-                        break;
-                    case "outside":
-                        start = rects[j].start;
-                        end = rects[j].end
-                        intersectedRects.push({ start, end });
+                if (start < rects[j].start && end >= rects[j].start && complementary == rects[j].complementary) {
+                    currentHeight++;
                 }
-                //this.params.segments[idSegment].rects.push(IntersectedRects);
             }
+            rects[i].currentHeight = currentHeight;
         }
+    }
 
-        function findIntersections(rect1, rect2) {
-            let layer = rect1.complementary == rect2.complementary;
+    cleaner(id) {
+        let { marginTop, stepLine } = this.params;
+        let segmentHeight = marginTop - stepLine / 2 + stepLine * id;
 
-            if (layer && rect1.start > rect2.start && rect1.start < rect2.end) {
-                return "right";
-            } else if (layer && rect1.start < rect2.start && rect1.end < rect2.start) {
-                return "left";
-            } else if (layer && rect1.start > rect2.start && rect1.end < rect2.end) {
-                return "inside";
-            } else if (layer && rect1.start < rect2.start && rect1.end > rect2.end) {
-                return "outside";
-            } else {
-                return false;
-            }
-        }
+        this.ctx.clearRect(0, segmentHeight, this.canvas.width, stepLine);
     }
 
     setLineDescription() {
@@ -228,29 +171,44 @@ class ChartDrawer {
         }
     }
 
-    focusOnRect() {
+    focusOnRect(id) {
         this.focusRectList = [];
-        let { segments } = this.params;
+        let { segments, leftBorder, lineWidth, popUpSize } = this.params;
+        let idSegment = this.catalogue[id];
+        let rects = segments[idSegment].rects
 
-        for (let id = 0; id < this.catalogue.length; id++) {
-            let idSegment = this.catalogue[id];
+        for (let i = 0; i < rects.length; i++) {
 
-            for (let i = 0; i < segments[idSegment].rects.length; i++) {
-                let mouseInRect = checkIntersected(this.coordinate, segments[idSegment].rects[i]);
+            let mouseInRect = checkIntersected(this.coordinate, rects[i]);
 
-                if (mouseInRect) {
-                    
-                    //console.log("jhgfcghjk");
-                }
+            if (mouseInRect) {
+                this.focusRectList.push(rects[i]);
+            }
 
-                if (!mouseInRect) {
-                    
-                }
+            if (!mouseInRect) {
+                this.cleaner(id);
+                this.drawOneSegment(idSegment, id);
+                document.getElementById('popUp').style.display = 'none';
             }
         }
 
         if (this.focusRectList.length) {
-            //this.mergeRects();
+            let ctx = this.ctx;
+
+            for (let i = 0; i < this.focusRectList.length; i++) {
+                let { x, y, w, h, motif } = this.focusRectList[i];
+
+                ctx.fillStyle = this.motifColors[motif];
+                ctx.fillRect(x, y, w, h);
+            }
+
+            for (let i = 0; i < this.focusRectList.length; i++) {
+                let { x, y, w, h } = this.focusRectList[i];
+
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, w, h);
+                ctx.lineWidth = 1;
+            }
         }
 
         function checkIntersected(point, rect) {
@@ -263,6 +221,25 @@ class ChartDrawer {
             return intersectedByX && intersectedByY;
         }
     }
+
+    focusOnSegments() {
+        let { leftBorder, lineWidth, marginTop, stepLine } = this.params;
+        let { x, y } = this.coordinate;
+
+        for (let i = 0; i < this.catalogue.length; i++) {
+            let _y = marginTop - stepLine / 2 + stepLine * i;
+
+            let intersectedByX = x >= leftBorder &&
+                x < leftBorder + lineWidth;
+
+            let intersectedByY = y >= _y &&
+                y < _y + stepLine;
+
+            if (intersectedByX && intersectedByY) {
+                this.focusOnRect(i);
+            }
+        }
+    }
 }
 
 function parser(inputData, params) {
@@ -272,23 +249,25 @@ function parser(inputData, params) {
     sequences.motifs = [];
 
     for (let i = 0; i < motifs.length; i++) {
-        let { occurrences, motif } = motifs[i];
+        let { occurrences, motif, chi2 } = motifs[i];
 
         for (let j = 0; j < occurrences.length; j++) {
             let { ranges, complementary_ranges, sequence_name } = occurrences[j];
             let fullRanges = ranges ? ranges : complementary_ranges;
+            fullRanges.sort((a, b) => a.start > b.start ? 1 : -1);
 
             for (let k = 0; k < fullRanges.length; k++) {
                 fullRanges[k].complementary = ranges ? 1 : 0;
                 fullRanges[k].motif = motif;
+                fullRanges[k].chi2 = chi2;
                 fullRanges[k].sequenceName = sequence_name;
                 rects.push(fullRanges[k]);
-                //console.log(fullRanges[k]);
             }
         }
 
         sequences.motifs.push(motifs[i].motif);
     }
+
     let filledLines = new Set();
 
     for (let i = 0; i < sequences.length; i++) {
@@ -302,5 +281,6 @@ function parser(inputData, params) {
         }
     }
     sequences.filledLines = Array.from(filledLines);
+    console.log(sequences);
     return params.segments = sequences;
 }

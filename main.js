@@ -7,7 +7,7 @@ window.onload = () => {
         canvas: "canvas",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
-        visibleLines: 1, //max: 1308
+        visibleLines: 100, //max: 1308
         popUpSize: 90,
         leftBorder: 100,
         lineWidth: 1000,
@@ -21,7 +21,7 @@ window.onload = () => {
 function initChart(params) {
     parser(data, params);
     chartDrawer = new ChartDrawer(params);
-    chartDrawer.draw(29);
+    chartDrawer.draw(0);
 }
 
 function removeEmpty() {
