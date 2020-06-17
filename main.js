@@ -3,16 +3,17 @@ let chartDrawer;
 
 window.onload = () => {
     //canvas.height = 0;
-    let params = {
+    const params = {
         canvas: "canvas",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
         visibleLines: 100, //max: 1308
         popUpSize: 90,
         leftBorder: 100,
-        lineWidth: 1000,
+        oneLiterWidth: 10,
         marginTop: 100,
         stepLine: 50,
+        neighbourhood: 3
     };
 
     initChart(params);

@@ -2,7 +2,7 @@
 class ChartDrawer {
     constructor(params) {
         const self = this;
-        this.rectCluster = 5;
+        this.rectCluster = 7;
         this.canvas = document.getElementById(params.canvas);
         this.ctx = this.canvas.getContext("2d");
         this.params = params;
@@ -19,7 +19,9 @@ class ChartDrawer {
     }
 
     draw(idSegment) {
-        let { lineWidth, leftBorder, visibleLines, segments } = this.params;
+        let { oneLiterWidth, leftBorder, visibleLines, segments } = this.params;
+        let { sequence } = this.params.segments[idSegment];
+        let lineWidth = oneLiterWidth * sequence.length;
         this.catalogue = [];
         this.motifsOnPage = [];
         this.currentPage = idSegment;
@@ -48,8 +50,9 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, lineWidth, marginTop, stepLine } = this.params;
+        let { baseColor, leftBorder, oneLiterWidth, marginTop, stepLine, neighbourhood } = this.params;
         let { rects, sequence, complementary_sequence } = this.params.segments[idSegment];
+        let lineWidth = oneLiterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
@@ -58,6 +61,9 @@ class ChartDrawer {
         this.breakRects(idSegment);
 
         this.ctx.translate(0.5, 0.5);
+
+        let a = ctx.measureText(sequence).width;
+        console.log(a);
 
         ctx.fillStyle = baseColor;
         ctx.beginPath();
@@ -83,16 +89,10 @@ class ChartDrawer {
             rects[i].y = y;
 
             let strSequence = (complementary == 1) ? complementary_sequence : sequence;
+            let startMotif = strSequence.slice(Math.max(start - neighbourhood, 0), start);
+            let endMotif = strSequence.slice(end, Math.min(strSequence.length, end + neighbourhood));
 
-            let startMotif = (start > 3) ? strSequence.slice(start - 3, start) : //не лишнее!
-                (start == 2) ? strSequence.slice(start - 2, start) :
-                    (start == 1) ? strSequence.slice(start - 1, start) : "";
-
-            let endMotif = (strSequence.length > end + 3) ? strSequence.slice(end, end + 3) :
-                (strSequence.length - end == 2) ? strSequence.slice(strSequence.length - 2, strSequence) :
-                    (strSequence.length - end == 1) ? strSequence.slice(strSequence.length - 1, strSequence) : "";
-
-            strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
+            rects[i].strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
 
             let rect = rects[i];
             this.motifsOnPage.push({ motif, rect });
@@ -101,6 +101,7 @@ class ChartDrawer {
             ctx.globalAlpha = 0.8;
             ctx.fillRect(x, y, w, h);
             ctx.globalAlpha = 1;
+            
         }
 
         for (let j = 0; j < rects.length; j++) {
@@ -109,25 +110,39 @@ class ChartDrawer {
             ctx.strokeRect(x, y, w, h);
             ctx.lineWidth = 1;
         }
-
+        this.showSegments(idSegment, turn);
         this.ctx.translate(-0.5, -0.5);
     }
 
     breakRects(idSegment) {
         let { rects } = this.params.segments[idSegment];
 
-        rects.sort((a, b) => a.start > b.start ? 1 : -1);
+        rects.sort((a, b) => a.start >= b.start ? 1 : -1);
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, complementary } = rects[i];
             let currentHeight = 0;
 
             for (let j = 0; j < rects.length; j++) {
-                if (start < rects[j].start && end >= rects[j].start && complementary == rects[j].complementary) {
+                if (start <= rects[j].start && end >= rects[j].start && complementary == rects[j].complementary) {
                     currentHeight++;
                 }
             }
             rects[i].currentHeight = currentHeight;
+        }
+    }
+
+    showSegments(idSegment, turn) {
+        let { oneLiterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
+        let { sequence, complementary_sequence } = this.params.segments[idSegment];
+        let maxWidth = sequence.length * oneLiterWidth;
+        let ctx = this.ctx;
+
+        ctx.fillStyle = baseColor;
+        
+        for (let i = 0; i < sequence.length; i++) {
+            ctx.fillText(sequence[i], leftBorder + i * oneLiterWidth, marginTop + stepLine * turn);
+            ctx.fillText(complementary_sequence[i], leftBorder + i * oneLiterWidth, 7 + marginTop + stepLine * turn);  
         }
     }
 
@@ -171,11 +186,84 @@ class ChartDrawer {
         }
     }
 
+    showMotifs(motif) {
+        let catalogue = this.catalogue;
+        let ctx = this.ctx;
+
+        for (let i = 0; i < catalogue.length; i++) {
+            let idSegment = catalogue[i];
+            let rects = this.params.segments[idSegment].rects;
+
+            for (let j = 0; j < rects.length; j++) {
+                let segmentMotif = rects[j].motif;
+
+                if (motif == segmentMotif) {
+                    let { x, y, w, h } = this.params.segments[idSegment].rects[j];
+                    this.params.segments[idSegment].rects[j].motifOnFocus = true;
+
+                    ctx.fillStyle = this.motifColors[motif];
+                    ctx.fillRect(x, y, w, h);
+
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.lineWidth = 1;
+                }
+            }
+        }
+    }
+
+    deleteShowMotifs() {
+        let catalogue = this.catalogue;
+
+        for (let i = 0; i < catalogue.length; i++) {
+            let idSegment = catalogue[i];
+            let rects = this.params.segments[idSegment].rects;
+
+            for (let j = 0; j < rects.length; j++) {
+                let motifOnFocus = (this.params.segments[idSegment].rects[j].motifOnFocus) ?
+                    this.params.segments[idSegment].rects[j].motifOnFocus : false;
+
+                if (motifOnFocus) {
+                    this.cleaner(i);
+                    this.drawOneSegment(idSegment, i);
+                }
+            }
+        }
+    }
+
+    drawPopUp() {
+        const indent = 20;
+        let rectList = this.focusRectList;
+        let { x, y } = this.coordinate;
+        let popUpSize = this.params.popUpSize;
+        let motif = rectList.map(rect => rect.motif);
+        let chi2 = rectList.map(rect => rect.chi2);
+        let strSequence = rectList.map(rect => rect.strSequence);
+        let element = document.getElementById('popUp');
+        let fontLeft = x - popUpSize + 'px';
+        let fontTop = indent + y + 'px';
+        let str = '';
+
+        element.style.width = popUpSize * 2 + 'px';
+
+        for (let i = 0; i < motif.length; i++) {
+            let endStr = (i < motif.length) ? '<br>' : '';
+            str = str + '<b>' + motif[i] + '</b>' + '<br>' + strSequence[i] + '<br>' + 'chi2:' + chi2[i] + endStr;
+        }
+
+        element.style.display = 'block';
+        element.style.marginTop = fontTop;
+        element.style.marginLeft = fontLeft;
+
+        element.innerHTML = str;
+    }
+
     focusOnRect(id) {
         this.focusRectList = [];
-        let { segments, leftBorder, lineWidth, popUpSize } = this.params;
+        let { segments } = this.params;
         let idSegment = this.catalogue[id];
-        let rects = segments[idSegment].rects
+        let rects = segments[idSegment].rects;
+        let ctx = this.ctx;
 
         for (let i = 0; i < rects.length; i++) {
 
@@ -183,23 +271,28 @@ class ChartDrawer {
 
             if (mouseInRect) {
                 this.focusRectList.push(rects[i]);
+                rects[i].focus = true;
+                this.drawPopUp();
             }
 
-            if (!mouseInRect) {
+            if (!mouseInRect && rects[i].focus) {
                 this.cleaner(id);
                 this.drawOneSegment(idSegment, id);
                 document.getElementById('popUp').style.display = 'none';
+                console.log("jk");
+                rects[i].focus = false;
+                this.deleteShowMotifs();
             }
         }
 
         if (this.focusRectList.length) {
-            let ctx = this.ctx;
-
             for (let i = 0; i < this.focusRectList.length; i++) {
                 let { x, y, w, h, motif } = this.focusRectList[i];
 
                 ctx.fillStyle = this.motifColors[motif];
                 ctx.fillRect(x, y, w, h);
+
+                this.showMotifs(motif);
             }
 
             for (let i = 0; i < this.focusRectList.length; i++) {
@@ -223,10 +316,14 @@ class ChartDrawer {
     }
 
     focusOnSegments() {
-        let { leftBorder, lineWidth, marginTop, stepLine } = this.params;
+        let { leftBorder, oneLiterWidth, marginTop, stepLine } = this.params;
         let { x, y } = this.coordinate;
 
         for (let i = 0; i < this.catalogue.length; i++) {
+            let idSegment = this.catalogue[i];
+            let { sequence } = this.params.segments[idSegment];
+            let lineWidth = oneLiterWidth * sequence.length;
+
             let _y = marginTop - stepLine / 2 + stepLine * i;
 
             let intersectedByX = x >= leftBorder &&
@@ -251,6 +348,8 @@ function parser(inputData, params) {
     for (let i = 0; i < motifs.length; i++) {
         let { occurrences, motif, chi2 } = motifs[i];
 
+        sequences.motifs.push(motifs[i].motif);
+
         for (let j = 0; j < occurrences.length; j++) {
             let { ranges, complementary_ranges, sequence_name } = occurrences[j];
             let fullRanges = ranges ? ranges : complementary_ranges;
@@ -261,11 +360,10 @@ function parser(inputData, params) {
                 fullRanges[k].motif = motif;
                 fullRanges[k].chi2 = chi2;
                 fullRanges[k].sequenceName = sequence_name;
+
                 rects.push(fullRanges[k]);
             }
         }
-
-        sequences.motifs.push(motifs[i].motif);
     }
 
     let filledLines = new Set();
@@ -281,6 +379,5 @@ function parser(inputData, params) {
         }
     }
     sequences.filledLines = Array.from(filledLines);
-    console.log(sequences);
     return params.segments = sequences;
 }
