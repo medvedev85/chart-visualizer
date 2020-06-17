@@ -19,9 +19,9 @@ class ChartDrawer {
     }
 
     draw(idSegment) {
-        let { oneLiterWidth, leftBorder, visibleLines, segments } = this.params;
+        let { oneLetterWidth, leftBorder, visibleLines, segments } = this.params;
         let { sequence } = this.params.segments[idSegment];
-        let lineWidth = oneLiterWidth * sequence.length;
+        let lineWidth = oneLetterWidth * sequence.length;
         this.catalogue = [];
         this.motifsOnPage = [];
         this.currentPage = idSegment;
@@ -50,9 +50,9 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, oneLiterWidth, marginTop, stepLine, neighbourhood } = this.params;
+        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine, neighbourhood } = this.params;
         let { rects, sequence, complementary_sequence } = this.params.segments[idSegment];
-        let lineWidth = oneLiterWidth * sequence.length;
+        let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
         let ctx = this.ctx;
 
@@ -61,9 +61,6 @@ class ChartDrawer {
         this.breakRects(idSegment);
 
         this.ctx.translate(0.5, 0.5);
-
-        let a = ctx.measureText(sequence).width;
-        console.log(a);
 
         ctx.fillStyle = baseColor;
         ctx.beginPath();
@@ -133,16 +130,16 @@ class ChartDrawer {
     }
 
     showSegments(idSegment, turn) {
-        let { oneLiterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
+        let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
         let { sequence, complementary_sequence } = this.params.segments[idSegment];
-        let maxWidth = sequence.length * oneLiterWidth;
+        
         let ctx = this.ctx;
 
         ctx.fillStyle = baseColor;
         
         for (let i = 0; i < sequence.length; i++) {
-            ctx.fillText(sequence[i], leftBorder + i * oneLiterWidth, marginTop + stepLine * turn);
-            ctx.fillText(complementary_sequence[i], leftBorder + i * oneLiterWidth, 7 + marginTop + stepLine * turn);  
+            ctx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 2+ stepLine * turn);
+            ctx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 8 + marginTop + stepLine * turn);  
         }
     }
 
@@ -279,7 +276,6 @@ class ChartDrawer {
                 this.cleaner(id);
                 this.drawOneSegment(idSegment, id);
                 document.getElementById('popUp').style.display = 'none';
-                console.log("jk");
                 rects[i].focus = false;
                 this.deleteShowMotifs();
             }
@@ -316,13 +312,13 @@ class ChartDrawer {
     }
 
     focusOnSegments() {
-        let { leftBorder, oneLiterWidth, marginTop, stepLine } = this.params;
+        let { leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
         let { x, y } = this.coordinate;
 
         for (let i = 0; i < this.catalogue.length; i++) {
             let idSegment = this.catalogue[i];
             let { sequence } = this.params.segments[idSegment];
-            let lineWidth = oneLiterWidth * sequence.length;
+            let lineWidth = oneLetterWidth * sequence.length;
 
             let _y = marginTop - stepLine / 2 + stepLine * i;
 
@@ -344,6 +340,7 @@ function parser(inputData, params) {
     let { motifs, sequences } = inputData;
 
     sequences.motifs = [];
+    params.visibleLines = Math.min(params.visibleLines, sequences.length - 1);
 
     for (let i = 0; i < motifs.length; i++) {
         let { occurrences, motif, chi2 } = motifs[i];

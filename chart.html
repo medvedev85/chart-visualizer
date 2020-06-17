@@ -14,15 +14,20 @@
     <input type="button" onclick="removeEmpty()" value="remove empty">
     <input type="button" onclick="paginator(false)" value="previous">
     <input type="button" onclick="paginator(true)" value="next">
-    <div id="checkbox">
-        <input type="checkbox" id=”one”>
-        <span>show the segments</span>
-    </div>
+
+    <span id="checkZone">
+        <input type="checkbox" checked="checked" id="checkbox">
+        <span>show the sequence</span>
+
+        <input type="checkbox" id="checkboxComplementary">
+        <span>show the complementary sequence</span>
+    </span>
+
     <div id="canvasContainer">
         <div id="headerCanvas">
             <span id="name">Name</span>
             <span id="motifLocations">Motif Locations</span>
-            
+
         </div>
         <div id="lineNameContainer">
             <span id="lineName"></span>
@@ -30,6 +35,7 @@
         <div id="popUp"></div>
         <canvas id="canvas">Your browser is not supported</canvas>
     </div>
+
     <input type="button" onclick="removeEmpty()" value="remove empty">
     <input type="button" onclick="paginator(false)" value="previous">
     <input type="button" onclick="paginator(true)" value="next">

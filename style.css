@@ -36,6 +36,7 @@
     display: none;
 }
 
-#checkbox{
-    margin-left: 800px;
+#checkZone{
+    position: absolute;
+    margin-left: 500px;
 }

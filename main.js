@@ -2,15 +2,14 @@
 let chartDrawer;
 
 window.onload = () => {
-    //canvas.height = 0;
     const params = {
         canvas: "canvas",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
-        visibleLines: 100, //max: 1308
+        visibleLines: 101, //max: 1308
         popUpSize: 90,
         leftBorder: 100,
-        oneLiterWidth: 10,
+        oneLetterWidth: 8,
         marginTop: 100,
         stepLine: 50,
         neighbourhood: 3
@@ -40,4 +39,9 @@ function paginator(direction) {
     (currentPage > visibleLines) ? currentPage - visibleLines : 0;
 
     chartDrawer.draw(nextPage, clean);
+}
+
+function lineShow() {
+    let checkbox = document.getElementById("checkbox");
+    let checkboxComplementary = document.getElementById("checkboxComplementary");
 }
