@@ -1,5 +1,15 @@
 #canvasContainer{
-    position:relative;
+    position: relative;
+}
+
+#firstLayer{
+    position: absolute;
+    z-index: 1;
+}
+
+#secondLayer{
+    position: inherit;
+    z-index: 2;
 }
 
 #headerCanvas{
@@ -15,16 +25,17 @@
 
 #lineNameContainer{
     position:absolute;
-    margin-top: 70px;
+    margin-top: 45px;
 }
 
 #lineName{
-    line-height: 50px;
+    line-height: 100px;
     white-space: pre-line;
 }
 
 #popUp{
     position: absolute;
+    z-index: 3;
     background-color: white;
     border: 4px double black;
     font-size: small;

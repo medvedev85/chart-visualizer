@@ -3,7 +3,8 @@ let chartDrawer;
 
 window.onload = () => {
     const params = {
-        canvas: "canvas",
+        firstLayer: "firstLayer",
+        secondLayer: "secondLayer",
         baseColor: "rgb(0, 0, 0)",
         colors: ["blue", "red", "yellow", "pink", "green", "brown", "orange", "coral", "purple"],
         visibleLines: 101, //max: 1308
@@ -11,7 +12,7 @@ window.onload = () => {
         leftBorder: 100,
         oneLetterWidth: 8,
         marginTop: 100,
-        stepLine: 50,
+        stepLine: 100,
         neighbourhood: 3
     };
 

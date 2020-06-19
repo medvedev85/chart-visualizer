@@ -2,16 +2,18 @@
 class ChartDrawer {
     constructor(params) {
         const self = this;
-        this.rectCluster = 7;
-        this.canvas = document.getElementById(params.canvas);
-        this.ctx = this.canvas.getContext("2d");
+        this.rectCluster = 25;
+        this.firstLayer = document.getElementById(params.firstLayer);
+        this.secondLayer = document.getElementById(params.secondLayer);
+        this.firstCtx = this.firstLayer.getContext("2d");
+        this.secondCtx = this.secondLayer.getContext("2d");
         this.params = params;
         this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
         this.motifColors = {};
         this.clean = false;
 
-        this.canvas.onmousemove = function (e) {
+        window.onmousemove = function (e) {
             self.coordinate.x = e.offsetX;
             self.coordinate.y = e.offsetY;
             self.focusOnSegments();
@@ -29,8 +31,10 @@ class ChartDrawer {
         let end = idSegment + visibleLines;
         let turn = 0;
         let filledLines = segments.filledLines;
-        this.canvas.width = leftBorder + rightBorder;
-        this.canvas.height = this.getHeight();
+        this.firstLayer.width = leftBorder + rightBorder;
+        this.firstLayer.height = this.getHeight();
+        this.secondLayer.width = leftBorder + rightBorder;
+        this.secondLayer.height = this.getHeight();
 
         this.selectColor();
 
@@ -54,19 +58,19 @@ class ChartDrawer {
         let { rects, sequence, complementary_sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
-        let ctx = this.ctx;
+        let firstCtx = this.firstCtx;
 
         this.setLineDescription();
 
         this.breakRects(idSegment);
 
-        this.ctx.translate(0.5, 0.5);
+        this.firstCtx.translate(0.5, 0.5);
 
-        ctx.fillStyle = baseColor;
-        ctx.beginPath();
-        ctx.moveTo(leftBorder, marginTop + stepLine * turn);
-        ctx.lineTo(rightBorder, marginTop + stepLine * turn);
-        ctx.stroke();
+        firstCtx.fillStyle = baseColor;
+        firstCtx.beginPath();
+        firstCtx.moveTo(leftBorder, marginTop + stepLine * turn);
+        firstCtx.lineTo(rightBorder, marginTop + stepLine * turn);
+        firstCtx.stroke();
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, motif, complementary, currentHeight } = rects[i];
@@ -89,26 +93,26 @@ class ChartDrawer {
             let startMotif = strSequence.slice(Math.max(start - neighbourhood, 0), start);
             let endMotif = strSequence.slice(end, Math.min(strSequence.length, end + neighbourhood));
 
-            rects[i].strSequence = startMotif + "<mark>" + sequence.slice(start, end) + "</mark>" + endMotif;
+            rects[i].strSequence = startMotif + '<span style="color: '+ this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
 
             let rect = rects[i];
             this.motifsOnPage.push({ motif, rect });
 
-            ctx.fillStyle = this.motifColors[motif];
-            ctx.globalAlpha = 0.8;
-            ctx.fillRect(x, y, w, h);
-            ctx.globalAlpha = 1;
+            firstCtx.fillStyle = this.motifColors[motif];
+            firstCtx.globalAlpha = 0.8;
+            firstCtx.fillRect(x, y, w, h);
+            firstCtx.globalAlpha = 1;
             
         }
 
         for (let j = 0; j < rects.length; j++) {
             let { x, y, w, h } = rects[j];
 
-            ctx.strokeRect(x, y, w, h);
-            ctx.lineWidth = 1;
+            firstCtx.strokeRect(x, y, w, h);
+            firstCtx.lineWidth = 1;
         }
         this.showSegments(idSegment, turn);
-        this.ctx.translate(-0.5, -0.5);
+        this.firstCtx.translate(-0.5, -0.5);
     }
 
     breakRects(idSegment) {
@@ -133,13 +137,13 @@ class ChartDrawer {
         let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
         let { sequence, complementary_sequence } = this.params.segments[idSegment];
         
-        let ctx = this.ctx;
+        let firstCtx = this.firstCtx;
 
-        ctx.fillStyle = baseColor;
+        firstCtx.fillStyle = baseColor;
         
         for (let i = 0; i < sequence.length; i++) {
-            ctx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 2+ stepLine * turn);
-            ctx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 8 + marginTop + stepLine * turn);  
+            firstCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 2 + stepLine * turn);
+            firstCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 8 + marginTop + stepLine * turn);  
         }
     }
 
@@ -147,7 +151,7 @@ class ChartDrawer {
         let { marginTop, stepLine } = this.params;
         let segmentHeight = marginTop - stepLine / 2 + stepLine * id;
 
-        this.ctx.clearRect(0, segmentHeight, this.canvas.width, stepLine);
+        this.secondCtx.clearRect(0, segmentHeight, this.secondLayer.width, stepLine);
     }
 
     setLineDescription() {
@@ -185,7 +189,7 @@ class ChartDrawer {
 
     showMotifs(motif) {
         let catalogue = this.catalogue;
-        let ctx = this.ctx;
+        let secondCtx = this.secondCtx;
 
         for (let i = 0; i < catalogue.length; i++) {
             let idSegment = catalogue[i];
@@ -198,34 +202,19 @@ class ChartDrawer {
                     let { x, y, w, h } = this.params.segments[idSegment].rects[j];
                     this.params.segments[idSegment].rects[j].motifOnFocus = true;
 
-                    ctx.fillStyle = this.motifColors[motif];
-                    ctx.fillRect(x, y, w, h);
+                    secondCtx.fillStyle = this.motifColors[motif];
+                    secondCtx.fillRect(x, y, w, h);
 
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y, w, h);
-                    ctx.lineWidth = 1;
+                    secondCtx.lineWidth = 2;
+                    secondCtx.strokeRect(x, y, w, h);
+                    secondCtx.lineWidth = 1;
                 }
             }
         }
     }
 
     deleteShowMotifs() {
-        let catalogue = this.catalogue;
-
-        for (let i = 0; i < catalogue.length; i++) {
-            let idSegment = catalogue[i];
-            let rects = this.params.segments[idSegment].rects;
-
-            for (let j = 0; j < rects.length; j++) {
-                let motifOnFocus = (this.params.segments[idSegment].rects[j].motifOnFocus) ?
-                    this.params.segments[idSegment].rects[j].motifOnFocus : false;
-
-                if (motifOnFocus) {
-                    this.cleaner(i);
-                    this.drawOneSegment(idSegment, i);
-                }
-            }
-        }
+        this.secondCtx.clearRect(0, 0, this.secondLayer.width, this.secondLayer.height);
     }
 
     drawPopUp() {
@@ -260,7 +249,7 @@ class ChartDrawer {
         let { segments } = this.params;
         let idSegment = this.catalogue[id];
         let rects = segments[idSegment].rects;
-        let ctx = this.ctx;
+        let secondCtx = this.secondCtx;
 
         for (let i = 0; i < rects.length; i++) {
 
@@ -274,7 +263,6 @@ class ChartDrawer {
 
             if (!mouseInRect && rects[i].focus) {
                 this.cleaner(id);
-                this.drawOneSegment(idSegment, id);
                 document.getElementById('popUp').style.display = 'none';
                 rects[i].focus = false;
                 this.deleteShowMotifs();
@@ -285,8 +273,8 @@ class ChartDrawer {
             for (let i = 0; i < this.focusRectList.length; i++) {
                 let { x, y, w, h, motif } = this.focusRectList[i];
 
-                ctx.fillStyle = this.motifColors[motif];
-                ctx.fillRect(x, y, w, h);
+                secondCtx.fillStyle = this.motifColors[motif];
+                secondCtx.fillRect(x, y, w, h);
 
                 this.showMotifs(motif);
             }
@@ -294,9 +282,9 @@ class ChartDrawer {
             for (let i = 0; i < this.focusRectList.length; i++) {
                 let { x, y, w, h } = this.focusRectList[i];
 
-                ctx.lineWidth = 2;
-                ctx.strokeRect(x, y, w, h);
-                ctx.lineWidth = 1;
+                secondCtx.lineWidth = 2;
+                secondCtx.strokeRect(x, y, w, h);
+                secondCtx.lineWidth = 1;
             }
         }
 
