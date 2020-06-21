@@ -8,8 +8,13 @@
 }
 
 #secondLayer{
-    position: inherit;
+    position: absolute;
     z-index: 2;
+}
+
+#thirdLayer{
+    position: absolute;
+    z-index: 3;
 }
 
 #headerCanvas{
@@ -35,7 +40,7 @@
 
 #popUp{
     position: absolute;
-    z-index: 3;
+    z-index: 4;
     background-color: white;
     border: 4px double black;
     font-size: small;
@@ -50,4 +55,13 @@
 #checkZone{
     position: absolute;
     margin-left: 500px;
+}
+
+@font-face {
+    font-family: "vcr-osd-mono";
+    src: url("https://dl.dropboxusercontent.com/s/hsdwvz761xqphhb/pixel.ttf");
+}
+
+* {
+    font-family: 'vcr-osd-mono';
 }

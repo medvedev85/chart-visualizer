@@ -2,11 +2,13 @@
 class ChartDrawer {
     constructor(params) {
         const self = this;
-        this.rectCluster = 25;
+        this.rectCluster = 10;
         this.firstLayer = document.getElementById(params.firstLayer);
         this.secondLayer = document.getElementById(params.secondLayer);
+        this.thirdLayer = document.getElementById(params.thirdLayer);
         this.firstCtx = this.firstLayer.getContext("2d");
         this.secondCtx = this.secondLayer.getContext("2d");
+        this.thirdCtx = this.thirdLayer.getContext("2d");
         this.params = params;
         this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
@@ -35,6 +37,8 @@ class ChartDrawer {
         this.firstLayer.height = this.getHeight();
         this.secondLayer.width = leftBorder + rightBorder;
         this.secondLayer.height = this.getHeight();
+        this.thirdLayer.width = leftBorder + rightBorder;
+        this.thirdLayer.height = this.getHeight();
 
         this.selectColor();
 
@@ -77,7 +81,7 @@ class ChartDrawer {
             let long = (rightBorder - leftBorder) / sequence.length;
             let x = Math.ceil(start * long + leftBorder);
             let w = Math.floor((end * long + leftBorder) - x);
-            let h = this.rectHeight + this.rectHeight * currentHeight * 0.5;
+            let h = this.rectHeight + this.rectHeight * currentHeight * 0.2;
             let y = (complementary == 1) ? marginTop - this.rectHeight + stepLine * turn : marginTop - h + stepLine * turn;
 
             if (complementary == 1) {
@@ -93,7 +97,7 @@ class ChartDrawer {
             let startMotif = strSequence.slice(Math.max(start - neighbourhood, 0), start);
             let endMotif = strSequence.slice(end, Math.min(strSequence.length, end + neighbourhood));
 
-            rects[i].strSequence = startMotif + '<span style="color: '+ this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
+            rects[i].strSequence = 'motif: ' + '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
 
             let rect = rects[i];
             this.motifsOnPage.push({ motif, rect });
@@ -102,7 +106,7 @@ class ChartDrawer {
             firstCtx.globalAlpha = 0.8;
             firstCtx.fillRect(x, y, w, h);
             firstCtx.globalAlpha = 1;
-            
+
         }
 
         for (let j = 0; j < rects.length; j++) {
@@ -111,40 +115,78 @@ class ChartDrawer {
             firstCtx.strokeRect(x, y, w, h);
             firstCtx.lineWidth = 1;
         }
-        this.showSegments(idSegment, turn);
         this.firstCtx.translate(-0.5, -0.5);
+        this.showSegments(idSegment, turn);
     }
 
     breakRects(idSegment) {
         let { rects } = this.params.segments[idSegment];
 
         rects.sort((a, b) => a.start >= b.start ? 1 : -1);
-
+        
         for (let i = 0; i < rects.length; i++) {
             let { start, end, complementary } = rects[i];
             let currentHeight = 0;
+            let j = i + 1
 
-            for (let j = 0; j < rects.length; j++) {
-                if (start <= rects[j].start && end >= rects[j].start && complementary == rects[j].complementary) {
-                    currentHeight++;
-                }
+            rects[i].currentHeight = 0;
+            
+            for (; j < rects.length; j++) {
+                if (start <= rects[j].start && end >= rects[j].start) {
+                    (complementary == rects[j].complementary) ? currentHeight++ : currentHeight;
+                    rects[j].currentHeight = ++currentHeight;
+                } else break;
             }
-            rects[i].currentHeight = currentHeight;
+            
+            i = j;
+        }
+        rects.sort((a, b) => a.start <= b.start ? 1 : -1);
+    }
+
+    chooseShowSegments(checkbox, checkboxComplementary) {
+        let thirdCtx = this.thirdCtx;
+        let catalogue = this.catalogue;
+        thirdCtx.clearRect(0, 0, this.thirdLayer.width, this.thirdLayer.height);
+
+        if (checkbox) {
+            for (let i = 0; i < catalogue.length; i++) {
+                let idSegment = catalogue[i];
+
+                this.showSegments(idSegment, i, false);
+            }
+        }
+
+        if (checkboxComplementary) {
+            for (let i = 0; i < catalogue.length; i++) {
+                let idSegment = catalogue[i];
+
+                this.showSegments(idSegment, i, true);
+            }
         }
     }
 
-    showSegments(idSegment, turn) {
+    showSegments(idSegment, turn, complementary) {
         let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
         let { sequence, complementary_sequence } = this.params.segments[idSegment];
-        
-        let firstCtx = this.firstCtx;
 
-        firstCtx.fillStyle = baseColor;
-        
+        let thirdCtx = this.thirdCtx;
+
+        thirdCtx.font = '9px vcr-osd-mono';
+        thirdCtx.shadowBlur = 0.05;
+        thirdCtx.shadowColor = baseColor;
+        thirdCtx.fillStyle = baseColor;
+
         for (let i = 0; i < sequence.length; i++) {
-            firstCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 2 + stepLine * turn);
-            firstCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 8 + marginTop + stepLine * turn);  
+            if (complementary) {
+                thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 9 + marginTop + stepLine * turn);
+            } else {
+                thirdCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 1 + stepLine * turn);
+            }
         }
+    }
+
+    deleteSegments() {
+        this.thirdCtx.clearRect(0, 0, this.thirdLayer.width, this.thirdLayer.height);
     }
 
     cleaner(id) {
@@ -233,8 +275,9 @@ class ChartDrawer {
         element.style.width = popUpSize * 2 + 'px';
 
         for (let i = 0; i < motif.length; i++) {
-            let endStr = (i < motif.length) ? '<br>' : '';
-            str = str + '<b>' + motif[i] + '</b>' + '<br>' + strSequence[i] + '<br>' + 'chi2:' + chi2[i] + endStr;
+            let endStr = (i != motif.length - 1) ?'<hr>': '';
+
+            str = str + strSequence[i] + '<br>' + 'chi2: ' + chi2[i] + endStr;
         }
 
         element.style.display = 'block';
@@ -276,7 +319,9 @@ class ChartDrawer {
                 secondCtx.fillStyle = this.motifColors[motif];
                 secondCtx.fillRect(x, y, w, h);
 
-                this.showMotifs(motif);
+                if (this.focusRectList.length <= 1) {
+                    this.showMotifs(motif);
+                }
             }
 
             for (let i = 0; i < this.focusRectList.length; i++) {
@@ -341,7 +386,12 @@ function parser(inputData, params) {
             fullRanges.sort((a, b) => a.start > b.start ? 1 : -1);
 
             for (let k = 0; k < fullRanges.length; k++) {
-                fullRanges[k].complementary = ranges ? 1 : 0;
+
+                if (!fullRanges.length) {
+                    fullRanges.splise(k, 1);
+                }
+
+                fullRanges[k].complementary = ranges ? 0 : 1;
                 fullRanges[k].motif = motif;
                 fullRanges[k].chi2 = chi2;
                 fullRanges[k].sequenceName = sequence_name;
@@ -359,7 +409,7 @@ function parser(inputData, params) {
         for (let j = 0; j < rects.length; j++) {
             if (sequences[i].name == rects[j].sequenceName) {
                 sequences[i].rects.push(rects[j]);
-                filledLines.add(sequences[i].name);
+                filledLines.add(i);
             }
         }
     }

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="ChartDrawer.js"></script>
-    <script src="data.js"></script>
+    <script src="bigData.js"></script>
     <script src="main.js"></script>
     <title>Chart page</title>
 </head>
@@ -16,10 +16,10 @@
     <input type="button" onclick="paginator(true)" value="next">
 
     <span id="checkZone">
-        <input type="checkbox" checked="checked" id="checkbox">
+        <input type="checkbox" onclick="segmentsShow()" checked="checked" id="checkbox">
         <span>show the sequence</span>
 
-        <input type="checkbox" id="checkboxComplementary">
+        <input type="checkbox" onclick="segmentsShow()" id="checkboxComplementary">
         <span>show the complementary sequence</span>
     </span>
 
@@ -35,11 +35,9 @@
         <div id="popUp"></div>
         <canvas id="firstLayer">Your browser is not supported</canvas>
         <canvas id="secondLayer"></canvas>
+        <canvas id="thirdLayer"></canvas>
     </div>
 
-    <input type="button" onclick="removeEmpty()" value="remove empty">
-    <input type="button" onclick="paginator(false)" value="previous">
-    <input type="button" onclick="paginator(true)" value="next">
 </body>
 
 </html>
