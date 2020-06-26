@@ -1,0 +1,18 @@
+.highlight {
+    background-color: lightblue;
+  }
+  
+  #result {
+      width: 485px;
+      height: 600px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #c1c1c1;
+      border-radius: 4px;
+      padding: 4px;
+  }
+  
+  .main-nav > table {
+      margin-top: 16px;
+      margin-left: 16px;
+  }

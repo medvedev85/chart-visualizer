@@ -1,11 +1,20 @@
-#jsonInputId{
-    width: 800px;
-    height: 300px;
-    word-break: break-word;
+#canvasContainer{
+    position: relative;
 }
 
-#canvasContainer{
-    position:relative;
+#firstLayer{
+    position: absolute;
+    z-index: 1;
+}
+
+#secondLayer{
+    position: absolute;
+    z-index: 2;
+}
+
+#thirdLayer{
+    position: absolute;
+    z-index: 3;
 }
 
 #headerCanvas{
@@ -21,24 +30,29 @@
 
 #lineNameContainer{
     position:absolute;
-    margin-top: 70px;
+    margin-top: 45px;
 }
 
 #lineName{
-    line-height: 50px;
+    line-height: 100px;
     white-space: pre-line;
 }
 
 #popUp{
     position: absolute;
+    z-index: 4;
     background-color: white;
     border: 4px double black;
     font-size: small;
     text-align: center;
-    vertical-align: middle;
     word-wrap: break-word;
     padding: 3px;
     min-height:100px;
     height:auto;
     display: none;
+}
+
+#checkZone{
+    position: absolute;
+    margin-left: 500px;
 }
