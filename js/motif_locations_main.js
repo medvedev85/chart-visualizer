@@ -3,20 +3,20 @@ window.addEventListener('load', initFindMotifs);
 let _currentMotif = "";
 let _visibleSequences = 200;
 
-function addChangeListener(id, callback) {
+function addChangeListener(id, callback) { //для отслеживания всякого
     const element = document.getElementById(id);
     if (element) {
         element.addEventListener('input', callback);
     }
 }
 
-function initListeners() {
+function initListeners() { //ждем изменений в формочке
     addChangeListener("motifs", (e) => setMotifs(e.target.value) );
     addChangeListener("complementary", (e) => recalculate());
     addChangeListener("fstSequencesInline", (e) => recalculate());
 }
 
-async function initFindMotifs() {
+async function initFindMotifs() { //перезапускаем логику если есть изменения
     setMaxExpandableHeight(400);
     initListeners();
     await parseUrlParams();
@@ -24,7 +24,7 @@ async function initFindMotifs() {
     //toggleCollapsible(document.getElementById("collapseResults"));
 }
 
-function perc2color(perc) {
+function perc2color(perc) { //создаем цвет для мотива
 	var r, g, b = 0;
 	if(perc < 50) {
 		r = 255;
@@ -38,7 +38,7 @@ function perc2color(perc) {
 	return '#' + ('000000' + h.toString(16)).slice(-6);
 }
 
-function genColorsList(count) {
+function genColorsList(count) { //задаем цвета всем мотивам
     let res = [];
     //console.log(count);
     for (let i = 0; i < count; i++) {
@@ -49,7 +49,7 @@ function genColorsList(count) {
     return res;
 }
 
-function reinitChartDrawer(motifs) {
+function reinitChartDrawer(motifs) { //обертка для запуска чартдровера
     let data = prepareData(motifs);
     const params = {
         firstLayer: "firstLayer",
@@ -71,7 +71,7 @@ function reinitChartDrawer(motifs) {
     chartDrawer.draw(0);
 }
 
-async function parseUrlParams() {
+async function parseUrlParams() { //магия какая то, вроде ждем изменений на страничке
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
 
@@ -99,19 +99,19 @@ async function parseUrlParams() {
     }
 }
 
-function setInputValue(id, text) {
+function setInputValue(id, text) { //устанавливаем значение text элементу id через .value
     let element = document.getElementById(id);
     element.value = text;
 }
 
-function setElementText(id, text) {
+function setElementText(id, text) { //помещаем данные на страницу через innerHTML
     let element = document.getElementById(id);
     element.innerHTML = text;
 }
 
 ///////// Motif list begin
 
-function splitMotifs(motifsStr) {
+function splitMotifs(motifsStr) { //создаем массив с мотивами
     let motifs = motifsStr.toUpperCase().split(" ").join(",").split(",");
     let res = [];
     for (let i = 0; i < motifs.length; i++) {
@@ -123,7 +123,7 @@ function splitMotifs(motifsStr) {
     return res;
 }
 
-function setMotifs(motifsStr) {
+function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)
     let motifs = splitMotifs(motifsStr);
 
     let html = "";
@@ -146,21 +146,21 @@ function setMotifs(motifsStr) {
 
 //////// Motif List end
 
-function getSequences() {
+function getSequences() { // получаем sequences из формы на странице
     let sequences = document.getElementById("fstSequencesInline").value.toUpperCase();
     return sequences;
 }
 
-function getMotifs() {
+function getMotifs() { //получаем мотивы из формы на странице
     let motifs = document.getElementById("motifs").value;
     return splitMotifs(motifs);
 }
 
-function getComplementary() {
+function getComplementary() { //выясняем, надо ли показывать комплиментарную последовательность
     return document.getElementById("complementary").value === "1";
 }
 
-function prepareData(showMotifs=[])
+function prepareData(showMotifs=[]) //создаем объект, который можно скормить парсеру и чартдроверу
 {
     let result = {
         "sequences": [],
@@ -256,7 +256,7 @@ function prepareData(showMotifs=[])
     return result;
 }
 
-function recalculate(showMotif = "") {
+function recalculate(showMotif = "") { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
     let sequences = getSequences();
     if (sequences.length === 0) {
         return;

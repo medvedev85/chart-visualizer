@@ -1,7 +1,7 @@
 "use strict;"
 
 
-function firstMotifOccurrence(sequence, motif, offset, complementary, real_chi2) {
+function firstMotifOccurrence(sequence, motif, offset, complementary, real_chi2) { //определяем старт рейнджей
     let fwdIdx = -1;
     for (let i = offset; i < sequence.length - motif.length + 1; i++) {
         if (motifCompare(sequence, i, motif, false)) {
@@ -64,7 +64,7 @@ const complMotifsMap  = {
             'B': 'GCA',
             'N': 'ACGT'};
 
-function motifCompare(sequence, offset, motif, complementary) {
+function motifCompare(sequence, offset, motif, complementary) { //находим соответствие мотивов с последовательностями
     for (let i = 0; i < motif.length; i++) {
         let strIdx = complementary ? offset + (motif.length-1-i) : i+offset;
         let sequenceSymbol = sequence[strIdx];
@@ -85,7 +85,7 @@ function motifCompare(sequence, offset, motif, complementary) {
     return true;
 }
 
-function splitSequences(text) {
+function splitSequences(text) { // получаем sequences из текстовых данных
     let sequences = text.split(">").filter(s => s);
 
     sequences = sequences.map(s => "> " + s.trim())
@@ -102,7 +102,7 @@ function splitSequences(text) {
     return sequences;
 }
 
-function makeComplementarySequence(sequence) {
+function makeComplementarySequence(sequence) { // получаем complementary_sequences
     let complementary  = "";
     for (let i = sequence.length - 1; i >= 0; i--) {
         complementary += complMotifsMap[sequence[i]];
