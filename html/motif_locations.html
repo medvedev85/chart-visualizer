@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New task</title>
+    <title>Locations</title>
     <link href="https://fonts.googleapis.com/css2?family=Tenali+Ramakrishna&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="../css/motif_location.css">
     <link rel="stylesheet" href="../css/chart_drawer.css">
     <script src="../js/main.js"></script>
-    <script src="../js/form.js"></script>
     <script src="../js/chart_drawer.js"></script>
     <script src="../js/motif_locations_main.js"></script>
     <script src="../js/find_motifs.js"></script>
@@ -42,9 +41,9 @@
         <h3>Motif locations</h3>
 
 
-        <form method="post" action="{{ url_for('bp.add_task') }}" enctype="multipart/form-data">
+        <form method="post">
             <label for="motifs" class="minimum-chi2">Motifs</label>
-            <input id="motifs" type="text" name="minimum_chi2" placeholder="example: ATWWCYNN, ATGCRRRR">
+            <input id="motifs" type="text" name="minimum_chi2" value="TGTTKACW, AAARMAAA, GGSWGGRG, TGTTTRYY, DGGCWGDG, YYTGTKTD, AMASAVAR, RYAMACAV, RRRGVCAG, AARHAAAS, DSMCAGDG, TKBCTBTK, KSCTGGSN, CYTKSCTB, CWGGCWGN, CWGCCWGN, CWGRGCWV, GTMAAYAD, RRSAVAGG, SMCAGDGN, RGGNCAGV, DGVCWCWG, AMACARSV, DGDGSWGG, ARAGBMMA, WGCHCWGB, SCCAGSMN, CAGRRRRV, GTTKACWB, DGGSAGGV, SHCWCTGB, DSTGTBTG, GSWGGRRR, CWCWSCWS, TSYYTBCY, MCAGVARV, RGVARSWG, DGRCYTKG, TTKWTTTN, WGDGGSWG, ASCWGSCH, TYTBYCTY" placeholder="example: ATWWCYNN, ATGCRRRR">
 
             <label for="complementary">Complementary</label>
             <select id="complementary" name="complementary">

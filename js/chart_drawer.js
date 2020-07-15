@@ -97,7 +97,7 @@ class ChartDrawer {
             let startMotif = strSequence.slice(Math.max(start - neighbourhood, 0), start);
             let endMotif = strSequence.slice(end, Math.min(strSequence.length, end + neighbourhood));
 
-            rects[i].strSequence =  '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
+            rects[i].strSequence = '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
 
             let rect = rects[i];
             this.motifsOnPage.push({ motif, rect });
@@ -134,11 +134,16 @@ class ChartDrawer {
 
             for (; j < rects.length; j++) {
                 if (start <= rects[j].start && end >= rects[j].start) {
-                    (complementary == rects[j].complementary) ? currentHeight++ : currentHeight;
+                    if (complementary == rects[j].complementary) {
+                        currentHeight++;
+                    } else {
+                        break;
+                    }
                     rects[j].currentHeight = currentHeight;
-                } else break;
+                } else {
+                    break;
+                }
             }
-
             i = j;
         }
         rects.sort((a, b) => a.start <= b.start ? 1 : -1);
@@ -276,7 +281,7 @@ class ChartDrawer {
         element.style.width = popUpSize * 2 + 'px';
 
         for (let i = 0; i < motif.length; i++) {
-            let endStr = (i != motif.length - 1) ?'<hr>': '';
+            let endStr = (i != motif.length - 1) ? '<hr>' : '';
 
             str = str + strSequence[i] + '<br>' + 'chi2: ' + chi2[i] + endStr;
         }
@@ -383,6 +388,7 @@ function parser(inputData, params) {
 
         for (let j = 0; j < occurrences.length; j++) {
             let { ranges, complementary_ranges, sequence_name } = occurrences[j];
+
             let fullRanges = ranges ? ranges : complementary_ranges;
             fullRanges.sort((a, b) => a.start > b.start ? 1 : -1);
 

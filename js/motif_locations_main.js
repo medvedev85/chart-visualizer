@@ -40,10 +40,10 @@ function perc2color(perc) {
 
 function genColorsList(count) {
     let res = [];
-    console.log(count);
+    //console.log(count);
     for (let i = 0; i < count; i++) {
         let perc = 100.0 * i / count + 0.5;
-        console.log(perc);
+        //console.log(perc);
         res.push(perc2color(perc));
     }
     return res;
