@@ -71,7 +71,7 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
     chartDrawer.draw(0);
 }
 
-async function parseUrlParams() { //магия какая то, вроде ждем изменений на страничке
+async function parseUrlParams() { //подставляет значения в урл 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
 
