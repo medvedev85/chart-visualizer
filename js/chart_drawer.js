@@ -58,15 +58,16 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine, neighbourhood } = this.params;
-        let { rects, sequence, complementary_sequence } = this.params.segments[idSegment];
+        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
+        let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
         let firstCtx = this.firstCtx;
 
         this.setLineDescription();
 
-        this.breakRects(idSegment);
+        this.breakRects(rects);
+        this.breakRects(rectsCompl);
 
         this.firstCtx.translate(0.5, 0.5);
 
@@ -75,6 +76,21 @@ class ChartDrawer {
         firstCtx.moveTo(leftBorder, marginTop + stepLine * turn);
         firstCtx.lineTo(rightBorder, marginTop + stepLine * turn);
         firstCtx.stroke();
+
+        this.rectsDraw(rects, idSegment, turn);
+        this.rectsDraw(rectsCompl, idSegment, turn);
+        
+        this.firstCtx.translate(-0.5, -0.5);
+        this.showSegments(idSegment, turn, false);
+        this.showSegments(idSegment, turn, true);
+    }
+
+    rectsDraw(rects, idSegment, turn) {
+        let { leftBorder, oneLetterWidth, marginTop, stepLine, neighbourhood } = this.params;
+        let { sequence, complementary_sequence } = this.params.segments[idSegment];
+        let lineWidth = oneLetterWidth * sequence.length;
+        let rightBorder = lineWidth + leftBorder;
+        let firstCtx = this.firstCtx;
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, motif, complementary, currentHeight } = rects[i];
@@ -106,7 +122,6 @@ class ChartDrawer {
             firstCtx.globalAlpha = 0.8;
             firstCtx.fillRect(x, y, w, h);
             firstCtx.globalAlpha = 1;
-
         }
 
         for (let j = 0; j < rects.length; j++) {
@@ -115,14 +130,9 @@ class ChartDrawer {
             firstCtx.strokeRect(x, y, w, h);
             firstCtx.lineWidth = 1;
         }
-        this.firstCtx.translate(-0.5, -0.5);
-        this.showSegments(idSegment, turn, false);
-        this.showSegments(idSegment, turn, true);
     }
 
-    breakRects(idSegment) {
-        let { rects } = this.params.segments[idSegment];
-
+    breakRects(rects) {
         rects.sort((a, b) => a.start >= b.start ? 1 : -1);
 
         for (let i = 0; i < rects.length; i++) {
@@ -134,16 +144,11 @@ class ChartDrawer {
 
             for (; j < rects.length; j++) {
                 if (start <= rects[j].start && end >= rects[j].start) {
-                    if (complementary == rects[j].complementary) {
-                        currentHeight++;
-                    } else {
-                        break;
-                    }
+                    (complementary == rects[j].complementary) ? currentHeight++ : currentHeight;
                     rects[j].currentHeight = currentHeight;
-                } else {
-                    break;
-                }
+                } else break;
             }
+
             i = j;
         }
         rects.sort((a, b) => a.start <= b.start ? 1 : -1);
@@ -297,7 +302,7 @@ class ChartDrawer {
         this.focusRectList = [];
         let { segments } = this.params;
         let idSegment = this.catalogue[id];
-        let rects = segments[idSegment].rects;
+        let rects = segments[idSegment].rects.concat(segments[idSegment].rectsCompl);
         let secondCtx = this.secondCtx;
 
         for (let i = 0; i < rects.length; i++) {
@@ -388,9 +393,15 @@ function parser(inputData, params) {
 
         for (let j = 0; j < occurrences.length; j++) {
             let { ranges, complementary_ranges, sequence_name } = occurrences[j];
+            let fullRanges = [];
 
-            let fullRanges = ranges ? ranges : complementary_ranges;
-            fullRanges.sort((a, b) => a.start > b.start ? 1 : -1);
+            if (ranges && complementary_ranges) {
+                fullRanges = ranges.concat(complementary_ranges);
+            } else if (ranges) {
+                fullRanges = ranges;
+            } else if (complementary_ranges) {
+                fullRanges = complementary_ranges;
+            }
 
             for (let k = 0; k < fullRanges.length; k++) {
 
@@ -412,10 +423,14 @@ function parser(inputData, params) {
 
     for (let i = 0; i < sequences.length; i++) {
         sequences[i].rects = [];
+        sequences[i].rectsCompl = [];
 
         for (let j = 0; j < rects.length; j++) {
-            if (sequences[i].name == rects[j].sequenceName) {
+            if (sequences[i].name == rects[j].sequenceName && rects[j].complementary == 0) {
                 sequences[i].rects.push(rects[j]);
+                filledLines.add(i);
+            } else if (sequences[i].name == rects[j].sequenceName && rects[j].complementary == 1) {
+                sequences[i].rectsCompl.push(rects[j]);
                 filledLines.add(i);
             }
         }
