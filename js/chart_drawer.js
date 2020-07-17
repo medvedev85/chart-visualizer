@@ -113,7 +113,7 @@ class ChartDrawer {
             let startMotif = strSequence.slice(Math.max(start - neighbourhood, 0), start);
             let endMotif = strSequence.slice(end, Math.min(strSequence.length, end + neighbourhood));
 
-            rects[i].strSequence = '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + sequence.slice(start, end) + '</b></span>' + endMotif;
+            rects[i].strSequence = '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + strSequence.slice(start, end) + '</b></span>' + endMotif;
 
             let rect = rects[i];
             this.motifsOnPage.push({ motif, rect });

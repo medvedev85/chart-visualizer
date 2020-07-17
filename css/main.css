@@ -1,4 +1,4 @@
-### Page layout
+/* Page layout */
 
 .main-head {
   grid-area: header;
@@ -128,7 +128,7 @@ textarea.expandable-content {
 
 .param-list a {
   padding: 0.7em;
-  margin-bottom: 0.5rem;љ
+  margin-bottom: 0.5rem;
 }
 
 @media (min-width: 400px) {

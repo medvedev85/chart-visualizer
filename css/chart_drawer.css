@@ -43,7 +43,8 @@
     z-index: 4;
     background-color: white;
     border: 4px double black;
-    font-size: small;
+    font-family: 'Consolas';
+    font-size: medium;
     text-align: center;
     word-wrap: break-word;
     padding: 3px;
