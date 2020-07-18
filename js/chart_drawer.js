@@ -288,7 +288,7 @@ class ChartDrawer {
         for (let i = 0; i < motif.length; i++) {
             let endStr = (i != motif.length - 1) ? '<hr>' : '';
 
-            str = str + strSequence[i] + '<br>' + 'χ²: ' + chi2[i] + endStr;
+            str = str + strSequence[i] + '<br>' + '&#967;' + '&#178;' + ': ' + chi2[i] + endStr;
         }
 
         element.style.display = 'block';
