@@ -1,7 +1,7 @@
 "use strict;"
 
 
-function firstMotifOccurrence(sequence, motif, offset, complementary, real_chi2) { //определяем старт рейнджей
+function firstMotifOccurrence(sequence, motif, offset, complementary) { //определяем старт рейнджей
     let fwdIdx = -1;
     for (let i = offset; i < sequence.length - motif.length + 1; i++) {
         if (motifCompare(sequence, i, motif, false)) {
@@ -108,4 +108,62 @@ function makeComplementarySequence(sequence) { // получаем complementary
         complementary += complMotifsMap[sequence[i]];
     }
     return complementary;
+}
+
+function calcFrequencies(text) {
+    let splitted = splitSequences(text);
+    let counts = { 'A': 0, 'T': 0, 'G': 0, 'C': 0 };
+
+    let total = 0;
+    for (let i = 0; i < splitted.length; i++) {
+        let seq = splitted[i][1];
+        total += seq.length;
+        seq.split('').forEach(function (s) {
+            counts[s] ? counts[s]++ : counts[s] = 1;
+        });
+    }
+    return counts;
+}
+
+function countTotalLen(text) {
+    let splitted = splitSequences(text);
+    let total = 0;
+    for (let i = 0; i < splitted.length; i++)
+        total += splitted[i][1].trim().length;
+    return total;
+}
+
+function calcRatios(text) {
+    let counts = calcFrequencies(text);
+    let total = countTotalLen(text);
+
+    for (var l in counts) {
+        counts[l] /= total;
+    }
+    return counts
+}
+
+function probInPos(motif, ratios) {
+    var prob1 = 1.0;
+    motif.toUpperCase().split("").forEach(function (let) {
+        let symbols = motifsMap[let];
+        let curP = 0.0;
+        symbols.split("").forEach(function (symb) {
+            curP += ratios[symb];
+        });
+        prob1 *= curP;
+    });
+    return prob1;
+}
+
+function probInSec(prob1, seq_len) {
+    var prob2 = 1.0 - Math.exp(-prob1 * (seq_len - 7) * 2);
+    return prob2;
+}
+
+function calcChi2Double(prob_pos, matches, seq_count) {
+    var expected = prob_pos * seq_count;
+    var x = expected - matches;
+    var chi2 = x * x / (expected);
+    return chi2;
 }

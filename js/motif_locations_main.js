@@ -58,7 +58,7 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
         baseColor: "rgb(0, 0, 0)",
         colors: genColorsList(getMotifs().length),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
         visibleLines: Math.min(_visibleSequences, data.sequences.length), //max: 1308
-        popUpSize: 90,
+        popUpSize: 100,
         leftBorder: 100,
         oneLetterWidth: 8,
         marginTop: 100,
@@ -160,6 +160,16 @@ function getComplementary() { //выясняем, надо ли показыва
     return document.getElementById("complementary").value === "1";
 }
 
+function countProbs(m, text, splitted, curMatches) {
+    let ratios = calcRatios(text);
+    let seqLen = splitted[0][1].length;
+    let seqCount = splitted.length;
+    let prob1 = probInPos(m, ratios);
+    let prob2 = probInSec(prob1, seqLen);
+    let chi2 = calcChi2Double(prob2, curMatches, seqCount);
+    return chi2;
+}
+
 function prepareData(showMotifs=[]) //создаем объект, который можно скормить парсеру и чартдроверу
 {
     let result = {
@@ -167,7 +177,9 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
         "motifs": []
     };
     let sequences = getSequences();
-    let motifs = showMotifs
+    let txt = sequences;
+    let motifs = showMotifs;
+
     if (showMotifs.length == 0) {
         motifs = getMotifs();
     }
@@ -186,7 +198,6 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
         }
     }
 
-
     for (let i = 0; i < sequences_count; i++) {
         let [name, sequence] = sequences[i];
         let seq = { name, sequence };
@@ -199,8 +210,11 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
     for (let mi = 0; mi < motifs.length; mi++) {
         let motif = motifs[mi];
         let occurrences = [];
+        let counter = 0;
+        let complCounter = 0;
 
         for (let i = 0; i < sequences_count; i++) {
+            let found = false;
             let [name, sequence] = sequences[i];
             let ranges = [];
             let index = firstMotifOccurrence(sequence, motif, 0, false);
@@ -216,38 +230,52 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
             let occ = {
                 sequence_name: name,
             };
+
+            if (found) {
+                counter++;
+            }
+
             if (ranges) {
                 occ.ranges = ranges;
                 occurrences.push(occ);
             }
 
             if (complementary) {
+                found = false;
                 let occ = {
                     sequence_name: name,
                 };
                 let compl_seq = compl_sequences[i];
 
                 let compl_ranges = [];
-                let index = firstMotifOccurrence(compl_seq, motif, 0, false);
+                let index = firstMotifOccurrence(compl_seq, motif, 0, true);
 
                 while (index >= 0) {
                     compl_ranges.push({
                         start: index,
                         end: index+motif.length
                     });
+                    found = true;
                     index += 1;
-                    index = firstMotifOccurrence(compl_seq, motif, index, false);
+                    index = firstMotifOccurrence(compl_seq, motif, index, true);
                 }
+
+                if (found) {
+                    complCounter++;
+                }
+
                 if (compl_ranges) {
                     occ.complementary_ranges = compl_ranges;
                     occurrences.push(occ);
                 }
             }
         } // sequences
+        curMatches = complCounter ? complCounter : counter;
+        let chi2 = countProbs(motif, txt, sequences, curMatches);
 
         if (occurrences.length) {
             result.motifs.push( {
-                chi2: "0",
+                chi2,
                 motif,
                 occurrences
             });
