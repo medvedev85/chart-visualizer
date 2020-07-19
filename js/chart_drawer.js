@@ -2,15 +2,7 @@
 class ChartDrawer {
     constructor(params) {
         const self = this;
-        this.rectCluster = 10;
-        this.firstLayer = document.getElementById(params.firstLayer);
-        this.secondLayer = document.getElementById(params.secondLayer);
-        this.thirdLayer = document.getElementById(params.thirdLayer);
-        this.firstCtx = this.firstLayer.getContext("2d");
-        this.secondCtx = this.secondLayer.getContext("2d");
-        this.thirdCtx = this.thirdLayer.getContext("2d");
         this.params = params;
-        this.rectHeight = params.stepLine / this.rectCluster++;
         this.coordinate = {};
         this.motifColors = {};
         this.clean = false;
@@ -22,23 +14,45 @@ class ChartDrawer {
         }
     }
 
+    get layers() {
+        let { firstLayer, secondLayer, thirdLayer } = this.params;
+
+        return {
+            firstLayer: document.getElementById(firstLayer),
+            secondLayer: document.getElementById(secondLayer),
+            thirdLayer: document.getElementById(thirdLayer)
+        };
+    }
+
+    get contexts() {
+        let { firstLayer, secondLayer, thirdLayer } = this.layers;
+
+        return {
+            firstCtx: firstLayer.getContext("2d"),
+            secondCtx: secondLayer.getContext("2d"),
+            thirdCtx: thirdLayer.getContext("2d")
+        };
+    }
+
     draw(idSegment) {
         let { oneLetterWidth, leftBorder, visibleLines, segments } = this.params;
         let { sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
-        this.catalogue = [];
-        this.motifsOnPage = [];
-        this.currentPage = idSegment;
         let rightBorder = lineWidth + leftBorder;
         let end = idSegment + visibleLines;
         let turn = 0;
         let filledLines = segments.filledLines;
-        this.firstLayer.width = leftBorder + rightBorder;
-        this.firstLayer.height = this.getHeight();
-        this.secondLayer.width = leftBorder + rightBorder;
-        this.secondLayer.height = this.getHeight();
-        this.thirdLayer.width = leftBorder + rightBorder;
-        this.thirdLayer.height = this.getHeight();
+
+        this.catalogue = [];
+        this.motifsOnPage = [];
+        this.currentPage = idSegment;
+
+        this.layers.firstLayer.width = leftBorder + rightBorder;
+        this.layers.firstLayer.height = this.getHeight();
+        this.layers.secondLayer.width = leftBorder + rightBorder;
+        this.layers.secondLayer.height = this.getHeight();
+        this.layers.thirdLayer.width = leftBorder + rightBorder;
+        this.layers.thirdLayer.height = this.getHeight();
 
         this.selectColor();
 
@@ -62,14 +76,14 @@ class ChartDrawer {
         let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
-        let firstCtx = this.firstCtx;
-
-        this.setLineDescription();
+        let firstCtx = this.contexts.firstCtx;
 
         this.breakRects(rects);
         this.breakRects(rectsCompl);
 
-        this.firstCtx.translate(0.5, 0.5);
+        this.createNameContainer(idSegment, turn, stepLine);
+
+        this.contexts.firstCtx.translate(0.5, 0.5);
 
         firstCtx.fillStyle = baseColor;
         firstCtx.beginPath();
@@ -79,30 +93,43 @@ class ChartDrawer {
 
         this.rectsDraw(rects, idSegment, turn);
         this.rectsDraw(rectsCompl, idSegment, turn);
-        
-        this.firstCtx.translate(-0.5, -0.5);
+
+        this.contexts.firstCtx.translate(-0.5, -0.5);
         this.showSegments(idSegment, turn, false);
         this.showSegments(idSegment, turn, true);
     }
 
+    createNameContainer(idSegment, turn, heightStep) {
+        const FIRST_HEIGHT = 70;
+        let { segments } = this.params;
+        let div = document.createElement("lineName");
+        let canvasContainer = document.getElementById("canvasContainer");
+        let height = FIRST_HEIGHT + turn * heightStep;
+
+        div.style.position = 'absolute';
+        div.style.marginTop = turn == 0 ? FIRST_HEIGHT + 'px' : height + 'px';
+
+        div.innerHTML = segments[idSegment].name;
+        canvasContainer.append(div);
+    }
+
     rectsDraw(rects, idSegment, turn) {
+        const FIT_LETTER = 0.6;
+        const RECT_HEIGHT = 10;
+        const OUTGROWTH = 3;
         let { leftBorder, oneLetterWidth, marginTop, stepLine, neighbourhood } = this.params;
         let { sequence, complementary_sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
-        let firstCtx = this.firstCtx;
+        let firstCtx = this.contexts.firstCtx;
 
         for (let i = 0; i < rects.length; i++) {
             let { start, end, motif, complementary, currentHeight } = rects[i];
             let long = (rightBorder - leftBorder) / sequence.length;
-            let x = Math.ceil(start * long + leftBorder) - 0.6;
+            let x = Math.ceil(start * long + leftBorder) - FIT_LETTER;
             let w = Math.floor((end * long + leftBorder) - x);
-            let h = this.rectHeight + 4 + this.rectHeight * currentHeight * 0.7;
-            let y = (complementary == 1) ? marginTop - this.rectHeight + stepLine * turn : marginTop - h + stepLine * turn;
-
-            if (complementary == 1) {
-                y += this.rectHeight;
-            }
+            let h = RECT_HEIGHT + currentHeight * OUTGROWTH;
+            let y = (complementary == 1) ? marginTop + stepLine * turn : marginTop - h + stepLine * turn;
 
             rects[i].x = x;
             rects[i].w = w;
@@ -133,31 +160,31 @@ class ChartDrawer {
     }
 
     breakRects(rects) {
+        const DISCHARGE = 9;
+        let currentHeight = 0;
+
         rects.sort((a, b) => a.start >= b.start ? 1 : -1);
 
-        for (let i = 0; i < rects.length; i++) {
-            let { start, end, complementary } = rects[i];
-            let currentHeight = 0;
-            let j = i + 1
+        for (let i = 0; i < rects.length - 1; i++) {
+            let { start, end } = rects[i];
 
-            rects[i].currentHeight = 0;
+            rects[i].currentHeight = currentHeight;
 
-            for (; j < rects.length; j++) {
-                if (start <= rects[j].start && end >= rects[j].start) {
-                    (complementary == rects[j].complementary) ? currentHeight++ : currentHeight;
-                    rects[j].currentHeight = currentHeight;
-                } else break;
+            if (start <= rects[i + 1].start && end >= rects[i + 1].start && currentHeight < DISCHARGE) {
+                currentHeight++;
+                rects[i + 1].currentHeight = currentHeight;
+            } else {
+                currentHeight = 0;
             }
-
-            i = j;
         }
+
         rects.sort((a, b) => a.start <= b.start ? 1 : -1);
     }
 
     chooseShowSegments(checkbox, checkboxComplementary) {
-        let thirdCtx = this.thirdCtx;
+        let thirdCtx = this.contexts.thirdCtx;
         let catalogue = this.catalogue;
-        thirdCtx.clearRect(0, 0, this.thirdLayer.width, this.thirdLayer.height);
+        thirdCtx.clearRect(0, 0, this.layers.thirdLayer.width, this.layers.thirdLayer.height);
 
         if (checkbox) {
             for (let i = 0; i < catalogue.length; i++) {
@@ -177,10 +204,11 @@ class ChartDrawer {
     }
 
     showSegments(idSegment, turn, complementary) {
+        const DISPLACEMENT = 9;
         let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
         let { sequence, complementary_sequence } = this.params.segments[idSegment];
 
-        let thirdCtx = this.thirdCtx;
+        let thirdCtx = this.contexts.thirdCtx;
 
         thirdCtx.font = '9px vcr-osd-mono';
         thirdCtx.shadowBlur = 0.05;
@@ -189,7 +217,7 @@ class ChartDrawer {
 
         for (let i = 0; i < sequence.length; i++) {
             if (complementary) {
-                thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, 9 + marginTop + stepLine * turn);
+                thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, DISPLACEMENT + marginTop + stepLine * turn);
             } else {
                 thirdCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 1 + stepLine * turn);
             }
@@ -197,26 +225,14 @@ class ChartDrawer {
     }
 
     deleteSegments() {
-        this.thirdCtx.clearRect(0, 0, this.thirdLayer.width, this.thirdLayer.height);
+        this.contexts.thirdCtx.clearRect(0, 0, this.layers.thirdLayer.width, this.layers.thirdLayer.height);
     }
 
     cleaner(id) {
         let { marginTop, stepLine } = this.params;
         let segmentHeight = marginTop - stepLine / 2 + stepLine * id;
 
-        this.secondCtx.clearRect(0, segmentHeight, this.secondLayer.width, stepLine);
-    }
-
-    setLineDescription() {
-        let { segments } = this.params;
-        let str = "";
-        for (let i = 0; i < this.catalogue.length; i++) {
-            let idSegment = this.catalogue[i];
-
-            str += segments[idSegment].name + ' ' + '\n';
-        }
-
-        document.getElementById('lineName').innerHTML = str;
+        this.contexts.secondCtx.clearRect(0, segmentHeight, this.layers.secondLayer.width, stepLine);
     }
 
     selectColor() {
@@ -242,7 +258,7 @@ class ChartDrawer {
 
     showMotifs(motif) {
         let catalogue = this.catalogue;
-        let secondCtx = this.secondCtx;
+        let secondCtx = this.contexts.secondCtx;
 
         for (let i = 0; i < catalogue.length; i++) {
             let idSegment = catalogue[i];
@@ -267,11 +283,11 @@ class ChartDrawer {
     }
 
     deleteShowMotifs() {
-        this.secondCtx.clearRect(0, 0, this.secondLayer.width, this.secondLayer.height);
+        this.contexts.secondCtx.clearRect(0, 0, this.layers.secondLayer.width, this.layers.secondLayer.height);
     }
 
     drawPopUp() {
-        const indent = 20;
+        const INDENT = 20;
         let rectList = this.focusRectList;
         let { x, y } = this.coordinate;
         let popUpSize = this.params.popUpSize;
@@ -280,7 +296,7 @@ class ChartDrawer {
         let strSequence = rectList.map(rect => rect.strSequence);
         let element = document.getElementById('popUp');
         let fontLeft = x - popUpSize + 'px';
-        let fontTop = indent + y + 'px';
+        let fontTop = INDENT + y + 'px';
         let str = '';
 
         element.style.width = popUpSize * 2 + 'px';
@@ -303,7 +319,7 @@ class ChartDrawer {
         let { segments } = this.params;
         let idSegment = this.catalogue[id];
         let rects = segments[idSegment].rects.concat(segments[idSegment].rectsCompl);
-        let secondCtx = this.secondCtx;
+        let secondCtx = this.contexts.secondCtx;
 
         for (let i = 0; i < rects.length; i++) {
 

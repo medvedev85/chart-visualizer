@@ -28,16 +28,6 @@
     margin-left: 55px;
 }
 
-#lineNameContainer{
-    position:absolute;
-    margin-top: 45px;
-}
-
-#lineName{
-    line-height: 70px;
-    white-space: pre-line;
-}
-
 #popUp{
     position: absolute;
     z-index: 4;

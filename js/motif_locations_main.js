@@ -62,7 +62,7 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
         leftBorder: 100,
         oneLetterWidth: 8,
         marginTop: 100,
-        stepLine: 70,
+        stepLine: 76,
         neighbourhood: 3
     };
 
