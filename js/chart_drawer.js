@@ -96,18 +96,24 @@ class ChartDrawer {
 
         this.contexts.firstCtx.translate(-0.5, -0.5);
         this.showSegments(idSegment, turn, false);
-        this.showSegments(idSegment, turn, true);
+        //this.showSegments(idSegment, turn, true);
     }
 
     createNameContainer(idSegment, turn, heightStep) {
         const FIRST_HEIGHT = 70;
         let { segments } = this.params;
-        let div = document.createElement("lineName");
+        let oldDiv = document.getElementById(`${idSegment}`);
+        let div = document.createElement("segment");
         let canvasContainer = document.getElementById("canvasContainer");
         let height = FIRST_HEIGHT + turn * heightStep;
 
         div.style.position = 'absolute';
         div.style.marginTop = turn == 0 ? FIRST_HEIGHT + 'px' : height + 'px';
+        div.id = idSegment;
+
+        if(oldDiv) {
+            oldDiv.remove();
+        }
 
         div.innerHTML = segments[idSegment].name;
         canvasContainer.append(div);
@@ -216,7 +222,7 @@ class ChartDrawer {
         thirdCtx.fillStyle = baseColor;
 
         for (let i = 0; i < sequence.length; i++) {
-            if (complementary) {
+            if (complementary && complementary_sequence) {
                 thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, DISPLACEMENT + marginTop + stepLine * turn);
             } else {
                 thirdCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 1 + stepLine * turn);

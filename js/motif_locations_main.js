@@ -2,6 +2,7 @@ window.addEventListener('load', initFindMotifs);
 
 let _currentMotif = "";
 let _visibleSequences = 200;
+let chartDrawer;
 
 function addChangeListener(id, callback) { //для отслеживания всякого
     const element = document.getElementById(id);
@@ -67,8 +68,46 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
     };
 
     parser(data, params);
-    let chartDrawer = new ChartDrawer(params);
+    chartDrawer = new ChartDrawer(params);
     chartDrawer.draw(0);
+}
+
+function segmentsShow() {
+    let checkbox = document.getElementById("checkbox");
+    let checkboxComplementary = document.getElementById("checkboxComplementary");
+    let checks = {};
+
+    if (checkbox.checked) {
+        checks.checkbox = true;
+    } else {
+        checks.checkbox = false;
+    }
+
+    if (checkboxComplementary.checked) {
+        checks.checkboxComplementary = true;
+    } else {
+        checks.checkboxComplementary = false;
+    }
+
+    chartDrawer.chooseShowSegments(checks.checkbox, checks.checkboxComplementary);
+    console.log(checks.checkbox, checks.checkboxComplementary)
+}
+
+function removeEmpty() {
+    chartDrawer.clean = (chartDrawer.clean) ? false : true;
+    let lastPage = chartDrawer.currentPage;
+
+    chartDrawer.draw(lastPage);
+}
+
+function paginator(direction) {
+    let { visibleLines } = chartDrawer.params;
+    let currentPage = chartDrawer.currentPage;
+    let clean = chartDrawer.clean;
+    let nextPage = (direction) ? currentPage + visibleLines :
+    (currentPage > visibleLines) ? currentPage - visibleLines : 0;
+
+    chartDrawer.draw(nextPage, clean);
 }
 
 async function parseUrlParams() { //подставляет значения в урл 
