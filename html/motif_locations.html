@@ -58,6 +58,20 @@
                     <option value="1" selected>Yes</option>
                 </select>
 
+                <label for="visibleSequences">Visible sequences</label>
+                <select id="visibleSequences" name="visibleSequences">
+                    <option value="5">5</option>
+                    <option value="100" selected>100</option>
+                    <option value="150">150</option>
+                    <option value="200">200</option>
+                    <option value="250">250</option>
+                    <option value="300">300</option>
+                    <option value="350">350</option>
+                    <option value="400">400</option>
+                    <option value="450">450</option>
+                    <option value="500">500</option>
+                </select>
+
                 <label for="fstSequences">Sequences set</label>
                 <span>
                     <input type="file" id="fstSequences" name="fst_sequences_file">
@@ -71,14 +85,19 @@
             <pre id="result" class="expandable-content"></pre>
 
             <span id="checkZone">
-                <input type="checkbox" onclick="segmentsShow()" checked="checked" id="checkbox">
+                <input type="checkbox" checked="checked" id="checkbox">
                 <span>show the sequence</span>
 
-                <input type="checkbox" onclick="segmentsShow()" id="checkboxComplementary">
+                <input type="checkbox" id="checkboxComplementary">
                 <span>show the complementary sequence</span>
+
+                <input type="checkbox" id="remove">
+                <span>remove empty</span>
             </span>
 
-            <input type="button" onclick="removeEmpty()" value="remove empty">
+            
+            <br>
+
             <input type="button" onclick="paginator(false)" value="previous">
             <input type="button" onclick="paginator(true)" value="next">
 

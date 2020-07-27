@@ -35,17 +35,54 @@ class ChartDrawer {
     }
 
     draw(idSegment) {
-        let { oneLetterWidth, leftBorder, visibleLines, segments } = this.params;
-        let { sequence } = this.params.segments[idSegment];
-        let lineWidth = oneLetterWidth * sequence.length;
-        let rightBorder = lineWidth + leftBorder;
-        let end = idSegment + visibleLines;
+        document.getElementById('headerCanvas').style.display = 'block';
+
+        if (this.catalogue) {
+            this.deleteNameContainer();
+        }
+        
+        this.getCatalogue(idSegment);
+        this.selectColor();
+
+        for (let i = 0; i < this.catalogue.length; i++) {
+            let id = this.catalogue[i];
+            this.drawOneSegment(id, i);
+        }
+    }
+
+    getCatalogue(idSegment) {
+        let { visibleLines, segments } = this.params;
+        let end = Math.min(idSegment + visibleLines, segments.length - 1);
         let turn = 0;
         let filledLines = segments.filledLines;
 
+        let biggestLength = this.params.segments[idSegment].sequence.length
         this.catalogue = [];
         this.motifsOnPage = [];
         this.currentPage = idSegment;
+
+        if (this.clean) {
+            for (let i = idSegment; i < filledLines.length; i++) {
+                let id = filledLines[i];
+                let { sequence } = this.params.segments[id];
+                this.catalogue.push(id);
+                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
+            }
+        } else {
+            for (; idSegment <= end; idSegment++, turn++) {
+                let { sequence } = this.params.segments[idSegment];
+                this.catalogue.push(idSegment);
+                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
+            }
+
+        }
+        this.getSize(biggestLength);
+    }
+
+    getSize(biggestLength) {
+        let { oneLetterWidth, leftBorder } = this.params;
+        let lineWidth = oneLetterWidth * biggestLength;
+        let rightBorder = lineWidth + leftBorder;
 
         this.layers.firstLayer.width = leftBorder + rightBorder;
         this.layers.firstLayer.height = this.getHeight();
@@ -53,22 +90,6 @@ class ChartDrawer {
         this.layers.secondLayer.height = this.getHeight();
         this.layers.thirdLayer.width = leftBorder + rightBorder;
         this.layers.thirdLayer.height = this.getHeight();
-
-        this.selectColor();
-
-        document.getElementById('headerCanvas').style.display = 'block';
-
-        if (this.clean) {
-            for (; idSegment < end; idSegment++, turn++) {
-                this.catalogue.push(filledLines[idSegment]);
-                this.drawOneSegment(filledLines[idSegment], turn);
-            }
-        } else {
-            for (; idSegment < end; idSegment++, turn++) {
-                this.catalogue.push(idSegment);
-                this.drawOneSegment(idSegment, turn);
-            }
-        }
     }
 
     drawOneSegment(idSegment, turn) {
@@ -102,7 +123,7 @@ class ChartDrawer {
     createNameContainer(idSegment, turn, heightStep) {
         const FIRST_HEIGHT = 70;
         let { segments } = this.params;
-        let oldDiv = document.getElementById(`${idSegment}`);
+
         let div = document.createElement("segment");
         let canvasContainer = document.getElementById("canvasContainer");
         let height = FIRST_HEIGHT + turn * heightStep;
@@ -111,12 +132,14 @@ class ChartDrawer {
         div.style.marginTop = turn == 0 ? FIRST_HEIGHT + 'px' : height + 'px';
         div.id = idSegment;
 
-        if(oldDiv) {
-            oldDiv.remove();
-        }
-
         div.innerHTML = segments[idSegment].name;
         canvasContainer.append(div);
+    }
+
+    deleteNameContainer() {
+        for (let i = 0; i < this.catalogue.length; i++) {
+            document.getElementById(`${this.catalogue[i]}`).remove();
+        }
     }
 
     rectsDraw(rects, idSegment, turn) {
@@ -171,12 +194,12 @@ class ChartDrawer {
 
         rects.sort((a, b) => a.start >= b.start ? 1 : -1);
 
-        for (let i = 0; i < rects.length - 1; i++) {
+        for (let i = 0; i < rects.length; i++) {
             let { start, end } = rects[i];
 
             rects[i].currentHeight = currentHeight;
 
-            if (start <= rects[i + 1].start && end >= rects[i + 1].start && currentHeight < DISCHARGE) {
+            if (rects[i + 1] && start <= rects[i + 1].start && end >= rects[i + 1].start && currentHeight < DISCHARGE) {
                 currentHeight++;
                 rects[i + 1].currentHeight = currentHeight;
             } else {
@@ -257,8 +280,8 @@ class ChartDrawer {
         let { segments, marginTop, stepLine, visibleLines } = this.params;
 
         if (segments) {
-            return (segments.length < visibleLines) ? marginTop + stepLine * (segments.length) :
-                marginTop + stepLine * visibleLines;
+            return (segments.length < visibleLines) ? marginTop + stepLine * (segments.length) + stepLine :
+                marginTop + stepLine * visibleLines + stepLine;
         }
     }
 

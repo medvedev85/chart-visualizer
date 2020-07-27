@@ -1,7 +1,6 @@
 window.addEventListener('load', initFindMotifs);
 
 let _currentMotif = "";
-let _visibleSequences = 200;
 let chartDrawer;
 
 function addChangeListener(id, callback) { //для отслеживания всякого
@@ -12,9 +11,11 @@ function addChangeListener(id, callback) { //для отслеживания в�
 }
 
 function initListeners() { //ждем изменений в формочке
-    addChangeListener("motifs", (e) => setMotifs(e.target.value) );
+    addChangeListener("motifs", (e) => setMotifs(e.target.value));
     addChangeListener("complementary", (e) => recalculate());
+    addChangeListener("visibleSequences", (e) => recalculate());
     addChangeListener("fstSequencesInline", (e) => recalculate());
+    addChangeListener("checkZone", (e) => getfilter());
 }
 
 async function initFindMotifs() { //перезапускаем логику если есть изменения
@@ -50,8 +51,26 @@ function genColorsList(count) { //задаем цвета всем мотива�
     return res;
 }
 
+function getfilter() {
+    let sequence = document.getElementById("checkbox").checked;
+    let complSeq = document.getElementById("checkboxComplementary").checked;
+    let removeEmpty = document.getElementById("remove").checked;
+
+    if (removeEmpty) {
+        chartDrawer.clean = true;
+        chartDrawer.draw(0);
+    } else {
+        chartDrawer.clean = false;
+        chartDrawer.draw(0);
+    }
+
+    chartDrawer.chooseShowSegments(sequence, complSeq);
+}
+
 function reinitChartDrawer(motifs) { //обертка для запуска чартдровера
-    let data = prepareData(motifs);
+    let _visibleSequences = getVisibleSequences();
+    let data = prepareData(motifs, _visibleSequences);
+
     const params = {
         firstLayer: "firstLayer",
         secondLayer: "secondLayer",
@@ -69,35 +88,7 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
 
     parser(data, params);
     chartDrawer = new ChartDrawer(params);
-    chartDrawer.draw(0);
-}
-
-function segmentsShow() {
-    let checkbox = document.getElementById("checkbox");
-    let checkboxComplementary = document.getElementById("checkboxComplementary");
-    let checks = {};
-
-    if (checkbox.checked) {
-        checks.checkbox = true;
-    } else {
-        checks.checkbox = false;
-    }
-
-    if (checkboxComplementary.checked) {
-        checks.checkboxComplementary = true;
-    } else {
-        checks.checkboxComplementary = false;
-    }
-
-    chartDrawer.chooseShowSegments(checks.checkbox, checks.checkboxComplementary);
-    console.log(checks.checkbox, checks.checkboxComplementary)
-}
-
-function removeEmpty() {
-    chartDrawer.clean = (chartDrawer.clean) ? false : true;
-    let lastPage = chartDrawer.currentPage;
-
-    chartDrawer.draw(lastPage);
+    getfilter();
 }
 
 function paginator(direction) {
@@ -136,6 +127,11 @@ async function parseUrlParams() { //подставляет значения в �
     if (complementary === "0") {
         setInputValue("complementary", complementary);
     }
+
+    const visibleSequences = urlParams.get('visibleSequences');
+    if (visibleSequences) {
+        setInputValue("visibleSequences", visibleSequences);
+    }
 }
 
 function setInputValue(id, text) { //устанавливаем значение text элементу id через .value
@@ -164,7 +160,6 @@ function splitMotifs(motifsStr) { //создаем массив с мотива�
 
 function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)
     let motifs = splitMotifs(motifsStr);
-
     let html = "";
     if (motifs.length > 1) {
         html += `<tr id="row_all">
@@ -175,7 +170,7 @@ function setMotifs(motifsStr) { //при получении массивов з�
         let motif = motifs[i];
         let color = perc2color(100.0*i / motifs.length + 0.5);
         html += `<tr id="row_${motif}">
-                    <td><a style="color: ${color};"     href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif}</a></td>
+                    <td><a style="color: ${color};"     href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif} </a><span class="checkMotif"><input type="checkbox" checked="checked" id="check:${motif}"></span></td>
                  </tr>`;
     }
 
@@ -190,6 +185,10 @@ function getSequences() { // получаем sequences из формы на с�
     return sequences;
 }
 
+function getVisibleSequences() {
+    return document.getElementById("visibleSequences").value;
+}
+
 function getMotifs() { //получаем мотивы из формы на странице
     let motifs = document.getElementById("motifs").value;
     return splitMotifs(motifs);
@@ -199,17 +198,37 @@ function getComplementary() { //выясняем, надо ли показыва
     return document.getElementById("complementary").value === "1";
 }
 
-function countProbs(m, text, splitted, curMatches) {
+function countProbs(motif, text, splitted, curMatches) {
     let ratios = calcRatios(text);
     let seqLen = splitted[0][1].length;
     let seqCount = splitted.length;
-    let prob1 = probInPos(m, ratios);
+    let prob1 = probInPos(motif, ratios);
     let prob2 = probInSec(prob1, seqLen);
     let chi2 = calcChi2Double(prob2, curMatches, seqCount);
     return chi2;
 }
 
-function prepareData(showMotifs=[]) //создаем объект, который можно скормить парсеру и чартдроверу
+function writeMotive (index) {
+    let ranges = [];
+    while (index >= 0) {
+        ranges.push({
+            start: index,
+            end: index+motif.length
+        });
+        index += 1;
+        index = firstMotifOccurrence(sequence, motif, index, false);
+    }
+    let occ = {
+        sequence_name: name,
+    };
+
+    if (ranges) {
+        occ.ranges = ranges;
+        occurrences.push(occ);
+    }
+}
+
+function prepareData(showMotifs=[], _visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
 {
     let result = {
         "sequences": [],
@@ -263,6 +282,7 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
                     start: index,
                     end: index+motif.length
                 });
+                found = true;
                 index += 1;
                 index = firstMotifOccurrence(sequence, motif, index, false);
             }
@@ -270,24 +290,19 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
                 sequence_name: name,
             };
 
-            if (found) {
-                counter++;
-            }
-
             if (ranges) {
                 occ.ranges = ranges;
                 occurrences.push(occ);
             }
 
             if (complementary) {
-                found = false;
                 let occ = {
                     sequence_name: name,
                 };
                 let compl_seq = compl_sequences[i];
 
                 let compl_ranges = [];
-                let index = firstMotifOccurrence(compl_seq, motif, 0, true);
+                let index = firstMotifOccurrence(compl_seq, motif, 0, false);
 
                 while (index >= 0) {
                     compl_ranges.push({
@@ -296,18 +311,20 @@ function prepareData(showMotifs=[]) //создаем объект, которы�
                     });
                     found = true;
                     index += 1;
-                    index = firstMotifOccurrence(compl_seq, motif, index, true);
-                }
-
-                if (found) {
-                    complCounter++;
+                    index = firstMotifOccurrence(compl_seq, motif, index, false);
                 }
 
                 if (compl_ranges) {
                     occ.complementary_ranges = compl_ranges;
                     occurrences.push(occ);
                 }
+                
             }
+
+            if (found) {
+                complCounter++;
+            }
+
         } // sequences
         curMatches = complCounter ? complCounter : counter;
         let chi2 = countProbs(motif, txt, sequences, curMatches);
@@ -338,7 +355,6 @@ function recalculate(showMotif = "") { //перезапускаем работу
 
     sequences = splitSequences(sequences);
     let foundSequences = [];
-    let positionsFound = 0;
     let resultHtml = "";
 
     for (let i = 0; i < sequences.length; i++) {
