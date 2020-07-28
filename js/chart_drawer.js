@@ -34,49 +34,26 @@ class ChartDrawer {
         };
     }
 
-    draw(idSegment) {
-        document.getElementById('headerCanvas').style.display = 'block';
+    ////////////////     charts     \\\\\\\\\\\\\\\\\
+    selectColor() {
+        let { segments, colors } = this.params;
+        let motifs = segments.motifs;
 
-        if (this.catalogue) {
-            this.deleteNameContainer();
-        }
-        
-        this.getCatalogue(idSegment);
-        this.selectColor();
+        for (let i = 0; i < motifs.length; i++) {
+            let motif = motifs[i];
+            let colorId = i % colors.length;
 
-        for (let i = 0; i < this.catalogue.length; i++) {
-            let id = this.catalogue[i];
-            this.drawOneSegment(id, i);
+            this.motifColors[motif] = colors[colorId];
         }
     }
 
-    getCatalogue(idSegment) {
-        let { visibleLines, segments } = this.params;
-        let end = Math.min(idSegment + visibleLines, segments.length - 1);
-        let turn = 0;
-        let filledLines = segments.filledLines;
+    getHeight() {
+        let { marginTop, stepLine, visibleLines } = this.params;
 
-        let biggestLength = this.params.segments[idSegment].sequence.length
-        this.catalogue = [];
-        this.motifsOnPage = [];
-        this.currentPage = idSegment;
-
-        if (this.clean) {
-            for (let i = idSegment; i < filledLines.length; i++) {
-                let id = filledLines[i];
-                let { sequence } = this.params.segments[id];
-                this.catalogue.push(id);
-                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
-            }
-        } else {
-            for (; idSegment <= end; idSegment++, turn++) {
-                let { sequence } = this.params.segments[idSegment];
-                this.catalogue.push(idSegment);
-                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
-            }
-
+        if (this.catalogue) {
+            return (this.catalogue.length < visibleLines) ? marginTop + stepLine * (this.catalogue.length) + stepLine :
+                marginTop + stepLine * visibleLines + stepLine;
         }
-        this.getSize(biggestLength);
     }
 
     getSize(biggestLength) {
@@ -92,54 +69,114 @@ class ChartDrawer {
         this.layers.thirdLayer.height = this.getHeight();
     }
 
-    drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
-        let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
-        let lineWidth = oneLetterWidth * sequence.length;
-        let rightBorder = lineWidth + leftBorder;
-        let firstCtx = this.contexts.firstCtx;
+    showSegments(idSegment, turn, complementary) {
+        const DISPLACEMENT = 9;
+        let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
+        let { sequence, complementary_sequence } = this.params.segments[idSegment];
 
-        this.breakRects(rects);
-        this.breakRects(rectsCompl);
+        let thirdCtx = this.contexts.thirdCtx;
 
-        this.createNameContainer(idSegment, turn, stepLine);
+        thirdCtx.font = '9px vcr-osd-mono';
+        thirdCtx.shadowBlur = 0.05;
+        thirdCtx.shadowColor = baseColor;
+        thirdCtx.fillStyle = baseColor;
 
-        this.contexts.firstCtx.translate(0.5, 0.5);
+        for (let i = 0; i < sequence.length; i++) {
+            if (complementary && complementary_sequence) {
+                thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, DISPLACEMENT + marginTop + stepLine * turn);
+            } else {
+                thirdCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 1 + stepLine * turn);
+            }
+        }
+    }
 
-        firstCtx.fillStyle = baseColor;
-        firstCtx.beginPath();
-        firstCtx.moveTo(leftBorder, marginTop + stepLine * turn);
-        firstCtx.lineTo(rightBorder, marginTop + stepLine * turn);
-        firstCtx.stroke();
+    chooseShowSegments(checkbox, checkboxComplementary) {
+        let thirdCtx = this.contexts.thirdCtx;
+        let catalogue = this.catalogue;
+        thirdCtx.clearRect(0, 0, this.layers.thirdLayer.width, this.layers.thirdLayer.height);
 
-        this.rectsDraw(rects, idSegment, turn);
-        this.rectsDraw(rectsCompl, idSegment, turn);
+        if (checkbox) {
+            for (let i = 0; i < catalogue.length; i++) {
+                let idSegment = catalogue[i];
 
-        this.contexts.firstCtx.translate(-0.5, -0.5);
-        this.showSegments(idSegment, turn, false);
-        //this.showSegments(idSegment, turn, true);
+                this.showSegments(idSegment, i, false);
+            }
+        }
+
+        if (checkboxComplementary) {
+            for (let i = 0; i < catalogue.length; i++) {
+                let idSegment = catalogue[i];
+
+                this.showSegments(idSegment, i, true);
+            }
+        }
+    }
+
+    setElementText(id, text) { //помещаем данные на страницу через innerHTML
+        let element = document.getElementById(id);
+        element.innerHTML = text;
+    }
+
+    selectMotifs() {
+
+    }
+
+    setMotifs() {
+        let motifs = this.motifColors;
+        let html = "";
+
+        if (motifs.length > 1) {
+            html += `<tr id="row_all">
+                        <td><a href="javascript:void(0)" onclick="recalculate();" >Select all motifs</a></td>
+                     </tr>`;
+        }
+        for (let key in motifs) {
+            let motif = key;
+            let color = motifs[key];
+            html += `<tr id="row_${motif}">
+                        <td><a style="color: ${color};"     href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif}</a><input type="checkbox" checked="checked" id="check:${motif}"></td>
+                     </tr>`;
+        }
+    
+        setElementText("motifsTableBody", html);
     }
 
     createNameContainer(idSegment, turn, heightStep) {
         const FIRST_HEIGHT = 70;
         let { segments } = this.params;
 
-        let div = document.createElement("segment");
-        let canvasContainer = document.getElementById("canvasContainer");
+        let div = document.createElement("div");
+        let nameContainer = document.getElementById("nameContainer");
         let height = FIRST_HEIGHT + turn * heightStep;
 
         div.style.position = 'absolute';
         div.style.marginTop = turn == 0 ? FIRST_HEIGHT + 'px' : height + 'px';
         div.id = idSegment;
-
         div.innerHTML = segments[idSegment].name;
-        canvasContainer.append(div);
+
+        nameContainer.append(div);
     }
 
-    deleteNameContainer() {
-        for (let i = 0; i < this.catalogue.length; i++) {
-            document.getElementById(`${this.catalogue[i]}`).remove();
+    breakRects(rects) {
+        const DISCHARGE = 9;
+        let currentHeight = 0;
+
+        rects.sort((a, b) => a.start >= b.start ? 1 : -1);
+
+        for (let i = 0; i < rects.length; i++) {
+            let { start, end } = rects[i];
+
+            rects[i].currentHeight = currentHeight;
+
+            if (rects[i + 1] && start <= rects[i + 1].start && end >= rects[i + 1].start && currentHeight < DISCHARGE) {
+                currentHeight++;
+                rects[i + 1].currentHeight = currentHeight;
+            } else {
+                currentHeight = 0;
+            }
         }
+
+        rects.sort((a, b) => a.start <= b.start ? 1 : -1);
     }
 
     rectsDraw(rects, idSegment, turn) {
@@ -171,9 +208,6 @@ class ChartDrawer {
 
             rects[i].strSequence = '<span style="color: ' + this.motifColors[motif] + '"><b>' + motif + '</b></span>' + '<br>' + startMotif + '<span style="color: ' + this.motifColors[motif] + '"><b>' + strSequence.slice(start, end) + '</b></span>' + endMotif;
 
-            let rect = rects[i];
-            this.motifsOnPage.push({ motif, rect });
-
             firstCtx.fillStyle = this.motifColors[motif];
             firstCtx.globalAlpha = 0.8;
             firstCtx.fillRect(x, y, w, h);
@@ -188,101 +222,93 @@ class ChartDrawer {
         }
     }
 
-    breakRects(rects) {
-        const DISCHARGE = 9;
-        let currentHeight = 0;
+    drawOneSegment(idSegment, turn) {
+        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
+        let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
+        let lineWidth = oneLetterWidth * sequence.length;
+        let rightBorder = lineWidth + leftBorder;
+        let firstCtx = this.contexts.firstCtx;
 
-        rects.sort((a, b) => a.start >= b.start ? 1 : -1);
+        this.breakRects(rects);
+        this.breakRects(rectsCompl);
 
-        for (let i = 0; i < rects.length; i++) {
-            let { start, end } = rects[i];
+        this.createNameContainer(idSegment, turn, stepLine);
 
-            rects[i].currentHeight = currentHeight;
+        this.contexts.firstCtx.translate(0.5, 0.5);
 
-            if (rects[i + 1] && start <= rects[i + 1].start && end >= rects[i + 1].start && currentHeight < DISCHARGE) {
-                currentHeight++;
-                rects[i + 1].currentHeight = currentHeight;
-            } else {
-                currentHeight = 0;
-            }
-        }
+        firstCtx.fillStyle = baseColor;
+        firstCtx.beginPath();
+        firstCtx.moveTo(leftBorder, marginTop + stepLine * turn);
+        firstCtx.lineTo(rightBorder, marginTop + stepLine * turn);
+        firstCtx.stroke();
 
-        rects.sort((a, b) => a.start <= b.start ? 1 : -1);
+        this.rectsDraw(rects, idSegment, turn);
+        this.rectsDraw(rectsCompl, idSegment, turn);
+
+        this.contexts.firstCtx.translate(-0.5, -0.5);
+        this.showSegments(idSegment, turn, false);
     }
 
-    chooseShowSegments(checkbox, checkboxComplementary) {
-        let thirdCtx = this.contexts.thirdCtx;
-        let catalogue = this.catalogue;
-        thirdCtx.clearRect(0, 0, this.layers.thirdLayer.width, this.layers.thirdLayer.height);
-
-        if (checkbox) {
-            for (let i = 0; i < catalogue.length; i++) {
-                let idSegment = catalogue[i];
-
-                this.showSegments(idSegment, i, false);
-            }
-        }
-
-        if (checkboxComplementary) {
-            for (let i = 0; i < catalogue.length; i++) {
-                let idSegment = catalogue[i];
-
-                this.showSegments(idSegment, i, true);
-            }
+    getNewNamesElement() {
+        try {
+            document.getElementById("nameContainer").remove();
+            this.getNewNamesElement();
+        } catch (error) {
+            let canvasContainer = document.getElementById("canvasContainer");
+            let nameContainer = document.createElement("div");
+            nameContainer.id = "nameContainer";
+            canvasContainer.append(nameContainer);
         }
     }
 
-    showSegments(idSegment, turn, complementary) {
-        const DISPLACEMENT = 9;
-        let { oneLetterWidth, baseColor, leftBorder, marginTop, stepLine } = this.params;
-        let { sequence, complementary_sequence } = this.params.segments[idSegment];
+    getCatalogue(idSegment) {
+        let { visibleLines, segments } = this.params;
+        let end = Math.min(idSegment + visibleLines, segments.length - 1);
+        let turn = 0;
+        let filledLines = segments.filledLines;
 
-        let thirdCtx = this.contexts.thirdCtx;
+        let biggestLength = this.params.segments[idSegment].sequence.length
+        this.catalogue = [];
 
-        thirdCtx.font = '9px vcr-osd-mono';
-        thirdCtx.shadowBlur = 0.05;
-        thirdCtx.shadowColor = baseColor;
-        thirdCtx.fillStyle = baseColor;
-
-        for (let i = 0; i < sequence.length; i++) {
-            if (complementary && complementary_sequence) {
-                thirdCtx.fillText(complementary_sequence[i], leftBorder + i * oneLetterWidth, DISPLACEMENT + marginTop + stepLine * turn);
-            } else {
-                thirdCtx.fillText(sequence[i], leftBorder + i * oneLetterWidth, marginTop - 1 + stepLine * turn);
+        if (this.clean) {
+            for (let i = idSegment; i < filledLines.length; i++) {
+                let id = filledLines[i];
+                let { sequence } = this.params.segments[id];
+                this.catalogue.push(id);
+                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
             }
+        } else {
+            for (; idSegment <= end; idSegment++, turn++) {
+                let { sequence } = this.params.segments[idSegment];
+                this.catalogue.push(idSegment);
+                biggestLength = (biggestLength < sequence.length) ? sequence.length : biggestLength;
+            }
+
         }
+        this.getSize(biggestLength);
     }
 
-    deleteSegments() {
-        this.contexts.thirdCtx.clearRect(0, 0, this.layers.thirdLayer.width, this.layers.thirdLayer.height);
+    draw(idSegment) {
+        document.getElementById('headerCanvas').style.display = 'block';
+
+        this.getNewNamesElement();
+        this.getCatalogue(idSegment);
+        this.selectColor();
+
+        for (let i = 0; i < this.catalogue.length; i++) {
+            let id = this.catalogue[i];
+            this.drawOneSegment(id, i);
+        }
+
+        this.setMotifs();
     }
 
+    ////////////////     pop up     \\\\\\\\\\\\\\\\\
     cleaner(id) {
         let { marginTop, stepLine } = this.params;
         let segmentHeight = marginTop - stepLine / 2 + stepLine * id;
 
         this.contexts.secondCtx.clearRect(0, segmentHeight, this.layers.secondLayer.width, stepLine);
-    }
-
-    selectColor() {
-        let { segments, colors } = this.params;
-        let motifs = segments.motifs;
-
-        for (let i = 0; i < motifs.length; i++) {
-            let motif = motifs[i];
-            let colorId = i % colors.length;
-
-            this.motifColors[motif] = colors[colorId];
-        }
-    }
-
-    getHeight() {
-        let { segments, marginTop, stepLine, visibleLines } = this.params;
-
-        if (segments) {
-            return (segments.length < visibleLines) ? marginTop + stepLine * (segments.length) + stepLine :
-                marginTop + stepLine * visibleLines + stepLine;
-        }
     }
 
     showMotifs(motif) {
@@ -343,6 +369,29 @@ class ChartDrawer {
         element.innerHTML = str;
     }
 
+    focusOnSegments() {
+        let { leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
+        let { x, y } = this.coordinate;
+
+        for (let i = 0; i < this.catalogue.length; i++) {
+            let idSegment = this.catalogue[i];
+            let { sequence } = this.params.segments[idSegment];
+            let lineWidth = oneLetterWidth * sequence.length;
+
+            let _y = marginTop - stepLine / 2 + stepLine * i;
+
+            let intersectedByX = x >= leftBorder &&
+                x < leftBorder + lineWidth;
+
+            let intersectedByY = y >= _y &&
+                y < _y + stepLine;
+
+            if (intersectedByX && intersectedByY) {
+                this.focusOnRect(i);
+            }
+        }
+    }
+
     focusOnRect(id) {
         this.focusRectList = [];
         let { segments } = this.params;
@@ -399,30 +448,9 @@ class ChartDrawer {
             return intersectedByX && intersectedByY;
         }
     }
-
-    focusOnSegments() {
-        let { leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
-        let { x, y } = this.coordinate;
-
-        for (let i = 0; i < this.catalogue.length; i++) {
-            let idSegment = this.catalogue[i];
-            let { sequence } = this.params.segments[idSegment];
-            let lineWidth = oneLetterWidth * sequence.length;
-
-            let _y = marginTop - stepLine / 2 + stepLine * i;
-
-            let intersectedByX = x >= leftBorder &&
-                x < leftBorder + lineWidth;
-
-            let intersectedByY = y >= _y &&
-                y < _y + stepLine;
-
-            if (intersectedByX && intersectedByY) {
-                this.focusOnRect(i);
-            }
-        }
-    }
 }
+
+/////////////    parser    \\\\\\\\\\\\\\\
 
 function parser(inputData, params) {
     let rects = [];

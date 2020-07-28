@@ -11,7 +11,6 @@ function addChangeListener(id, callback) { //для отслеживания в�
 }
 
 function initListeners() { //ждем изменений в формочке
-    addChangeListener("motifs", (e) => setMotifs(e.target.value));
     addChangeListener("complementary", (e) => recalculate());
     addChangeListener("visibleSequences", (e) => recalculate());
     addChangeListener("fstSequencesInline", (e) => recalculate());
@@ -27,17 +26,17 @@ async function initFindMotifs() { //перезапускаем логику ес
 }
 
 function perc2color(perc) { //создаем цвет для мотива
-	var r, g, b = 0;
-	if(perc < 50) {
-		r = 255;
-		g = Math.round(5.1 * perc);
-	}
-	else {
-		g = 255;
-		r = Math.round(510 - 5.10 * perc);
-	}
-	var h = r * 0x10000 + g * 0x100 + b * 0x1;
-	return '#' + ('000000' + h.toString(16)).slice(-6);
+    var r, g, b = 0;
+    if (perc < 50) {
+        r = 255;
+        g = Math.round(5.1 * perc);
+    }
+    else {
+        g = 255;
+        r = Math.round(510 - 5.10 * perc);
+    }
+    var h = r * 0x10000 + g * 0x100 + b * 0x1;
+    return '#' + ('000000' + h.toString(16)).slice(-6);
 }
 
 function genColorsList(count) { //задаем цвета всем мотивам
@@ -67,6 +66,36 @@ function getfilter() {
     chartDrawer.chooseShowSegments(sequence, complSeq);
 }
 
+function getNewPageContainer() {
+    try {
+        document.getElementById("pageContainer").remove();
+        getNewPageContainer();
+        
+    } catch (error) {
+        let canvasContainer = document.getElementById("canvasContainer");
+        let pageContainer = document.createElement("div");
+        pageContainer.id = "pageContainer";
+        canvasContainer.append(pageContainer);
+    }
+}
+function setNewButtonPaging(id, value) {
+    let input = document.createElement("input");
+    let container = document.getElementById(id);
+
+    input.type = "button";
+    input.setAttribute("onclick", "recalculate()");
+    input.value = value;
+
+    
+    container.append(input);
+}
+
+function paginator(last, over) {
+    console.log(6546546464)
+    getNewPageContainer();
+    setNewButtonPaging("pageContainer", "previous");
+}
+
 function reinitChartDrawer(motifs) { //обертка для запуска чартдровера
     let _visibleSequences = getVisibleSequences();
     let data = prepareData(motifs, _visibleSequences);
@@ -89,28 +118,13 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
     parser(data, params);
     chartDrawer = new ChartDrawer(params);
     getfilter();
+    paginator(3,5);
 }
 
-function paginator(direction) {
-    let { visibleLines } = chartDrawer.params;
-    let currentPage = chartDrawer.currentPage;
-    let clean = chartDrawer.clean;
-    let nextPage = (direction) ? currentPage + visibleLines :
-    (currentPage > visibleLines) ? currentPage - visibleLines : 0;
-
-    chartDrawer.draw(nextPage, clean);
-}
 
 async function parseUrlParams() { //подставляет значения в урл 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-
-    // 1. Motif
-    const motif = urlParams.get('motif') || "";
-    if (motif) {
-        setInputValue("motifs", motif);
-        setMotifs(motif);
-    }
 
     // 2. Sequence_url
     const sequences_url = urlParams.get('sequences_url') || "";
@@ -158,26 +172,6 @@ function splitMotifs(motifsStr) { //создаем массив с мотива�
     return res;
 }
 
-function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)
-    let motifs = splitMotifs(motifsStr);
-    let html = "";
-    if (motifs.length > 1) {
-        html += `<tr id="row_all">
-                    <td><a href="javascript:void(0)" onclick="recalculate();" >Select all motifs</a></td>
-                 </tr>`;
-    }
-    for (let i = 0; i < motifs.length; i++) {
-        let motif = motifs[i];
-        let color = perc2color(100.0*i / motifs.length + 0.5);
-        html += `<tr id="row_${motif}">
-                    <td><a style="color: ${color};"     href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif} </a><span class="checkMotif"><input type="checkbox" checked="checked" id="check:${motif}"></span></td>
-                 </tr>`;
-    }
-
-    setElementText("motifsTableBody", html);
-    recalculate();
-}
-
 //////// Motif List end
 
 function getSequences() { // получаем sequences из формы на странице
@@ -208,12 +202,12 @@ function countProbs(motif, text, splitted, curMatches) {
     return chi2;
 }
 
-function writeMotive (index) {
+function writeMotive(index) {
     let ranges = [];
     while (index >= 0) {
         ranges.push({
             start: index,
-            end: index+motif.length
+            end: index + motif.length
         });
         index += 1;
         index = firstMotifOccurrence(sequence, motif, index, false);
@@ -228,7 +222,7 @@ function writeMotive (index) {
     }
 }
 
-function prepareData(showMotifs=[], _visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
+function prepareData(showMotifs = [], _visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
 {
     let result = {
         "sequences": [],
@@ -280,7 +274,7 @@ function prepareData(showMotifs=[], _visibleSequences) //создаем объе
             while (index >= 0) {
                 ranges.push({
                     start: index,
-                    end: index+motif.length
+                    end: index + motif.length
                 });
                 found = true;
                 index += 1;
@@ -307,7 +301,7 @@ function prepareData(showMotifs=[], _visibleSequences) //создаем объе
                 while (index >= 0) {
                     compl_ranges.push({
                         start: index,
-                        end: index+motif.length
+                        end: index + motif.length
                     });
                     found = true;
                     index += 1;
@@ -318,7 +312,7 @@ function prepareData(showMotifs=[], _visibleSequences) //создаем объе
                     occ.complementary_ranges = compl_ranges;
                     occurrences.push(occ);
                 }
-                
+
             }
 
             if (found) {
@@ -330,7 +324,7 @@ function prepareData(showMotifs=[], _visibleSequences) //создаем объе
         let chi2 = countProbs(motif, txt, sequences, curMatches);
 
         if (occurrences.length) {
-            result.motifs.push( {
+            result.motifs.push({
                 chi2,
                 motif,
                 occurrences
@@ -346,7 +340,7 @@ function recalculate(showMotif = "") { //перезапускаем работу
         return;
     }
     let motifs = getMotifs();
-    if (motifs.length === 0 ) {
+    if (motifs.length === 0) {
         return;
     }
     motif = showMotif || _currentMotif || motifs[0];
@@ -355,6 +349,7 @@ function recalculate(showMotif = "") { //перезапускаем работу
 
     sequences = splitSequences(sequences);
     let foundSequences = [];
+    let positionsFound = 0;
     let resultHtml = "";
 
     for (let i = 0; i < sequences.length; i++) {
@@ -368,9 +363,9 @@ function recalculate(showMotif = "") { //перезапускаем работу
             matched = true;
             positionsFound++;
             sequence = sequence.substring(0, index) +
-                       "<span class='highlight'>" +
-                       sequence.substring(index, index + motif.length) +
-                       "</span>" + sequence.substring(index + motif.length);
+                "<span class='highlight'>" +
+                sequence.substring(index, index + motif.length) +
+                "</span>" + sequence.substring(index + motif.length);
             index = sequence.lastIndexOf("span") + 5;
             index = firstMotifOccurrence(sequence, motif, index, complementary);
         }
