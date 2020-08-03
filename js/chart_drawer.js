@@ -112,35 +112,6 @@ class ChartDrawer {
         }
     }
 
-    setElementText(id, text) { //помещаем данные на страницу через innerHTML
-        let element = document.getElementById(id);
-        element.innerHTML = text;
-    }
-
-    selectMotifs() {
-
-    }
-
-    setMotifs() {
-        let motifs = this.motifColors;
-        let html = "";
-
-        if (motifs.length > 1) {
-            html += `<tr id="row_all">
-                        <td><a href="javascript:void(0)" onclick="recalculate();" >Select all motifs</a></td>
-                     </tr>`;
-        }
-        for (let key in motifs) {
-            let motif = key;
-            let color = motifs[key];
-            html += `<tr id="row_${motif}">
-                        <td><a style="color: ${color};"     href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif}</a><input type="checkbox" checked="checked" id="check:${motif}"></td>
-                     </tr>`;
-        }
-    
-        setElementText("motifsTableBody", html);
-    }
-
     createNameContainer(idSegment, turn, heightStep) {
         const FIRST_HEIGHT = 70;
         let { segments } = this.params;
@@ -250,15 +221,16 @@ class ChartDrawer {
     }
 
     getNewNamesElement() {
-        try {
-            document.getElementById("nameContainer").remove();
-            this.getNewNamesElement();
-        } catch (error) {
-            let canvasContainer = document.getElementById("canvasContainer");
-            let nameContainer = document.createElement("div");
-            nameContainer.id = "nameContainer";
-            canvasContainer.append(nameContainer);
+        let container = document.getElementById("nameContainer");
+        let canvasContainer = document.getElementById("canvasContainer");
+
+        if (container) {
+            container.remove();
         }
+
+        container = document.createElement("div");
+        container.id = "nameContainer";
+        canvasContainer.append(container);
     }
 
     getCatalogue(idSegment) {
@@ -299,8 +271,6 @@ class ChartDrawer {
             let id = this.catalogue[i];
             this.drawOneSegment(id, i);
         }
-
-        this.setMotifs();
     }
 
     ////////////////     pop up     \\\\\\\\\\\\\\\\\

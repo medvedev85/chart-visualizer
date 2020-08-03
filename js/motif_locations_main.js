@@ -1,6 +1,7 @@
 window.addEventListener('load', initFindMotifs);
 
 let _currentMotif = "";
+let currentSeq = 0;
 let chartDrawer;
 
 function addChangeListener(id, callback) { //для отслеживания всякого
@@ -11,6 +12,7 @@ function addChangeListener(id, callback) { //для отслеживания в�
 }
 
 function initListeners() { //ждем изменений в формочке
+    addChangeListener("motifs", (e) => setMotifs(e.target.value));
     addChangeListener("complementary", (e) => recalculate());
     addChangeListener("visibleSequences", (e) => recalculate());
     addChangeListener("fstSequencesInline", (e) => recalculate());
@@ -24,6 +26,8 @@ async function initFindMotifs() { //перезапускаем логику ес
     recalculate();
     //toggleCollapsible(document.getElementById("collapseResults"));
 }
+
+
 
 function perc2color(perc) { //создаем цвет для мотива
     var r, g, b = 0;
@@ -66,38 +70,97 @@ function getfilter() {
     chartDrawer.chooseShowSegments(sequence, complSeq);
 }
 
-function getNewPageContainer() {
-    try {
-        document.getElementById("pageContainer").remove();
-        getNewPageContainer();
-        
-    } catch (error) {
-        let canvasContainer = document.getElementById("canvasContainer");
-        let pageContainer = document.createElement("div");
-        pageContainer.id = "pageContainer";
-        canvasContainer.append(pageContainer);
+function createNewPageContainer() {
+    let container = document.getElementById("pageContainer");
+    let paginator = document.getElementById("paginator");
+
+    if (container) {
+        container.remove();
     }
+
+    сontainer = document.createElement("div");
+    сontainer.id = "pageContainer";
+    paginator.append(сontainer);
 }
-function setNewButtonPaging(id, value) {
+
+function setNewButtonPaging(id, value, page, _visibleSequences) {
     let input = document.createElement("input");
     let container = document.getElementById(id);
 
     input.type = "button";
-    input.setAttribute("onclick", "recalculate()");
     input.value = value;
 
-    
+    input.setAttribute('class', 'pure-button');
+    input.addEventListener('click', () => pageClick(page, _visibleSequences));
+    input.disabled = currentSeq / _visibleSequences == page ? true : false;
+
     container.append(input);
+    return input;
 }
 
-function paginator(last, over) {
-    console.log(6546546464)
-    getNewPageContainer();
-    setNewButtonPaging("pageContainer", "previous");
+function pageClick(nextSeq, _visibleSequences) {
+    currentSeq = nextSeq * _visibleSequences;
+    recalculate();
+}
+
+function paginator(allSeq, _visibleSequences) {
+    createNewPageContainer();
+    let over = Math.ceil(allSeq / _visibleSequences);
+    let page = Math.ceil(currentSeq / _visibleSequences);
+
+    let previous = setNewButtonPaging("pageContainer", "<", (currentSeq - _visibleSequences) / _visibleSequences, _visibleSequences);
+    previous.disabled = currentSeq < _visibleSequences ? true : false;
+    let nextPage;
+
+    if (over < 10) {
+        for (let i = 0; i < over; i++) {
+            setNewButtonPaging("pageContainer", `${i + 1}`, i, _visibleSequences);
+        }
+    }
+
+    if (over > 10 && page < 8) {
+        setNewButtonPaging("pageContainer", "1", 0, _visibleSequences);
+
+        for (let i = 1; i < 8; i++) {
+            setNewButtonPaging("pageContainer", `${i + 1}`, i, _visibleSequences);
+            nextPage = i + 1;
+        }
+
+        setNewButtonPaging("pageContainer", "...", nextPage, _visibleSequences);
+        setNewButtonPaging("pageContainer", `${over}`, over - 1, _visibleSequences);
+    }
+
+    if (over > 10 && page > 7 && over - page > 6) {
+
+        setNewButtonPaging("pageContainer", "1", 0, _visibleSequences);
+        setNewButtonPaging("pageContainer", "...", page - 1, _visibleSequences);
+
+        for (let i = page; i < page + 6; i++) {
+            setNewButtonPaging("pageContainer", `${i + 1}`, i, _visibleSequences);
+            nextPage = i;
+        }
+
+        setNewButtonPaging("pageContainer", "...", nextPage, _visibleSequences);
+        setNewButtonPaging("pageContainer", `${over}`, over - 1, _visibleSequences);
+    }
+
+    if (over > 10 && page > 7 && over - page <= 6) {
+        setNewButtonPaging("pageContainer", "1", 0, _visibleSequences);
+        setNewButtonPaging("pageContainer", "...", page - 1, _visibleSequences);
+
+        for (let i = page; i < over; i++) {
+            setNewButtonPaging("pageContainer", `${i + 1}`, i, _visibleSequences);
+        }
+    }
+
+    let next = setNewButtonPaging("pageContainer", ">", page + 1, _visibleSequences);
+    next.disabled = currentSeq / _visibleSequences == over - 1 ? true : false;
 }
 
 function reinitChartDrawer(motifs) { //обертка для запуска чартдровера
     let _visibleSequences = getVisibleSequences();
+    let sequences = getSequences();
+    seqSplited = splitSequences(sequences);
     let data = prepareData(motifs, _visibleSequences);
 
     const params = {
@@ -118,13 +181,22 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
     parser(data, params);
     chartDrawer = new ChartDrawer(params);
     getfilter();
-    paginator(3,5);
+    paginator(seqSplited.length, _visibleSequences);
+    setMotifsOfChecks();
+    //initButtonClicks("123");
 }
 
 
 async function parseUrlParams() { //подставляет значения в урл 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
+
+    // 1. Motif	
+    const motif = urlParams.get('motif') || "";
+    if (motif) {
+        setInputValue("motifs", motif);
+        setMotifs(motif);
+    }
 
     // 2. Sequence_url
     const sequences_url = urlParams.get('sequences_url') || "";
@@ -170,6 +242,45 @@ function splitMotifs(motifsStr) { //создаем массив с мотива�
         }
     }
     return res;
+}
+
+function createCheckBox(id) {
+    let elem = document.getElementById(`row_${id}`);
+    let box = document.createElement("input");
+    box.type = "checkbox";
+    box.id = id;
+    box.addEventListener('chenge', () => alert(321313));
+    elem.append(box);
+}
+
+function createAllCheckBoxes(motifs) {
+    createCheckBox("all");
+    for (let i = 0; i < motifs.length; i++) {
+        createCheckBox(motifs[i]);
+    }
+}
+
+function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)	
+    let motifs = splitMotifs(motifsStr);
+    let html = "";
+
+    if (motifs.length > 1) {
+        html += `<tr id="row_all">	
+                    <td><a href="javascript:void(0)" onclick="recalculate();" >Select all motifs</a></td>	
+                 </tr>`;
+    }
+
+    for (let i = 0; i < motifs.length; i++) {
+        let motif = motifs[i];
+        let color = perc2color(100.0 * i / motifs.length + 0.5);
+        html += `<tr id="row_${motif}">	
+                    <td><a style="color: ${color};" href="javascript:void(0)" onclick="recalculate('${motif}');" >${motif} </a></td>	
+                 </tr>`;
+    }
+
+    setElementText("motifsTableBody", html);
+    createAllCheckBoxes(motifs);
+    recalculate();
 }
 
 //////// Motif List end
@@ -242,8 +353,10 @@ function prepareData(showMotifs = [], _visibleSequences) //создаем объ
     let complementary = getComplementary();
 
     sequences = splitSequences(sequences);
+    sequences.splice(0, currentSeq);
+
     let compl_sequences = [];
-    let sequences_count = Math.min(sequences.length, _visibleSequences);
+    let sequences_count = Math.min(sequences.length, _visibleSequences);//конец последовательности
     if (complementary) {
         for (let i = 0; i < sequences_count; i++) {
             compl_sequences.push(makeComplementarySequence(sequences[i][1]));

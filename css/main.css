@@ -31,6 +31,10 @@
     "footer";
 }
 
+#paginator {
+  margin-top: 30px;
+}
+
 @media (min-width: 500px) {
   .wrapper {
     grid-template-columns: 1fr 3fr;
