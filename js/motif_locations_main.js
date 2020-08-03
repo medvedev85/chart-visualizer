@@ -182,7 +182,6 @@ function reinitChartDrawer(motifs) { //обертка для запуска ча
     chartDrawer = new ChartDrawer(params);
     getfilter();
     paginator(seqSplited.length, _visibleSequences);
-    setMotifsOfChecks();
     //initButtonClicks("123");
 }
 
@@ -248,7 +247,6 @@ function createCheckBox(id) {
     let elem = document.getElementById(`row_${id}`);
     let box = document.createElement("input");
     box.type = "checkbox";
-    box.id = id;
     box.addEventListener('chenge', () => alert(321313));
     elem.append(box);
 }
