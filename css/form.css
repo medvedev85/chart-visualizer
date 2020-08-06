@@ -57,6 +57,10 @@ form input:focus {
   form .subsection-title {
     grid-column: 1 / 3;
   }
+  form div {
+    grid-column: 1 / 3;
+    text-align: right;
+  }
 }
 
 form textarea {

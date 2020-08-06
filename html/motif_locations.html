@@ -34,7 +34,7 @@
             <table class="pure-table pure-table-striped">
                 <thead>
                     <tr>
-                        <td>Filter motifs</td>
+                        <td colspan="2">Filter motifs</td>
                     </tr>
                 </thead>
                 <tbody id="motifsTableBody">
@@ -48,10 +48,7 @@
 
             <form method="post">
                 <label for="motifs" class="minimum-chi2">Motifs</label>
-                <input id="motifs" type="text" name="minimum_chi2"
-                    value="TGTTKACW, AAARMAAA, GGSWGGRG, TGTTTRYY, DGGCWGDG, YYTGTKTD, AMASAVAR, RYAMACAV, RRRGVCAG, AARHAAAS, DSMCAGDG, TKBCTBTK, KSCTGGSN, CYTKSCTB, CWGGCWGN, CWGCCWGN, CWGRGCWV, GTMAAYAD, RRSAVAGG, SMCAGDGN, RGGNCAGV, DGVCWCWG, AMACARSV, DGDGSWGG, ARAGBMMA, WGCHCWGB, SCCAGSMN, CAGRRRRV, GTTKACWB, DGGSAGGV, SHCWCTGB, DSTGTBTG, GSWGGRRR, CWCWSCWS, TSYYTBCY, MCAGVARV, RGVARSWG, DGRCYTKG, TTKWTTTN, WGDGGSWG, ASCWGSCH, TYTBYCTY"
-                    placeholder="example: ATWWCYNN, ATGCRRRR">
-
+                <input id="motifs" type="text" name="minimum_chi2" placeholder="example: ATWWCYNN, ATGCRRRR">
                 <label for="complementary">Complementary</label>
                 <select id="complementary" name="complementary">
                     <option value="0">No</option>
@@ -60,8 +57,8 @@
 
                 <label for="visibleSequences">Visible sequences</label>
                 <select id="visibleSequences" name="visibleSequences">
-                    <option value="5">5</option>
-                    <option value="100" selected>100</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
                     <option value="150">150</option>
                     <option value="200">200</option>
                     <option value="250">250</option>
@@ -79,21 +76,23 @@
                     <textarea id="fstSequencesInline" rows="5" cols="45" class="expandable-content"
                         name="fst_sequences_inline"></textarea>
                 </span>
+
+                <div id="checkZone">
+                    <input type="checkbox" checked="checked" id="checkbox">
+                    <span>show the sequence</span>
+
+                    <input type="checkbox" id="checkboxComplementary">
+                    <span>show the complementary sequence</span>
+
+                    <input type="checkbox" id="remove">
+                    <span>remove empty</span>
+                </div>
             </form>
 
             <a id="collapseResults" href="#" class="expand-section">Hide occurrences</a>
             <pre id="result" class="expandable-content"></pre>
 
-            <span id="checkZone">
-                <input type="checkbox" checked="checked" id="checkbox">
-                <span>show the sequence</span>
 
-                <input type="checkbox" id="checkboxComplementary">
-                <span>show the complementary sequence</span>
-
-                <input type="checkbox" id="remove">
-                <span>remove empty</span>
-            </span>
 
             <div id="paginator"></div>
 
