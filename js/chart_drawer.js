@@ -57,11 +57,11 @@ class ChartDrawer {
     }
 
     getSize(biggestLength) {
-        let { oneLetterWidth, leftBorder } = this.params;
+        let { oneLetterWidth, leftBorder, popUpSize } = this.params;
         let lineWidth = oneLetterWidth * biggestLength;
         let rightBorder = lineWidth + leftBorder;
 
-        this.layers.firstLayer.width = leftBorder + rightBorder;
+        this.layers.firstLayer.width = leftBorder + rightBorder + popUpSize;
         this.layers.firstLayer.height = this.getHeight();
         this.layers.secondLayer.width = leftBorder + rightBorder;
         this.layers.secondLayer.height = this.getHeight();
@@ -113,7 +113,7 @@ class ChartDrawer {
     }
 
     createNameContainer(idSegment, turn, heightStep) {
-        const FIRST_HEIGHT = 70;
+        const FIRST_HEIGHT = this.params.marginTop - 40;
         let { segments } = this.params;
 
         let div = document.createElement("div");
@@ -194,7 +194,7 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
+        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine} = this.params;
         let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
@@ -261,7 +261,7 @@ class ChartDrawer {
     }
 
     draw(idSegment) {
-        document.getElementById('headerCanvas').style.display = 'block';
+        //document.getElementById('headerCanvas').style.display = 'block';
 
         this.getNewNamesElement();
         this.getCatalogue(idSegment);
@@ -288,6 +288,7 @@ class ChartDrawer {
         for (let i = 0; i < catalogue.length; i++) {
             let idSegment = catalogue[i];
             let rects = this.params.segments[idSegment].rects;
+            let rectsCompl = this.params.segments[idSegment].rectsCompl;
 
             for (let j = 0; j < rects.length; j++) {
                 let segmentMotif = rects[j].motif;
@@ -295,6 +296,22 @@ class ChartDrawer {
                 if (motif == segmentMotif) {
                     let { x, y, w, h } = this.params.segments[idSegment].rects[j];
                     this.params.segments[idSegment].rects[j].motifOnFocus = true;
+
+                    secondCtx.fillStyle = this.motifColors[motif];
+                    secondCtx.fillRect(x, y, w, h);
+
+                    secondCtx.lineWidth = 2;
+                    secondCtx.strokeRect(x, y, w, h);
+                    secondCtx.lineWidth = 1;
+                }
+            }
+            
+            for (let k = 0; k < rectsCompl.length; k++) {
+                let segmentMotif = rectsCompl[k].motif;
+
+                if (motif == segmentMotif) {
+                    let { x, y, w, h } = this.params.segments[idSegment].rectsCompl[k];
+                    this.params.segments[idSegment].rectsCompl[k].motifOnFocus = true;
 
                     secondCtx.fillStyle = this.motifColors[motif];
                     secondCtx.fillRect(x, y, w, h);

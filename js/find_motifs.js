@@ -91,7 +91,7 @@ function splitSequences(text) { // получаем sequences из тексто�
     sequences = sequences.map(s => "> " + s.trim())
     let i = 1;
     sequences = sequences.map(s => {
-        var lines = s.split("\n");
+        let lines = s.split("\n");
         let name = lines[0]
         if (!name.endsWith(i)) {
             name += ", " + i ;

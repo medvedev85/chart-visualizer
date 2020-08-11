@@ -17,17 +17,6 @@
     z-index: 3;
 }
 
-#headerCanvas{
-    position:absolute;
-    display: none;
-    margin-top: 50px;
-    font-weight: bolder;
-}
-
-#motifLocations{
-    margin-left: 55px;
-}
-
 #popUp{
     position: absolute;
     z-index: 4;

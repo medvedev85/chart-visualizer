@@ -50,7 +50,7 @@
                 <label for="motifs" class="minimum-chi2">Motifs</label>
                 <input id="motifs" type="text" name="minimum_chi2" placeholder="example: ATWWCYNN, ATGCRRRR">
                 <label for="complementary">Complementary</label>
-                <select id="complementary" name="complementary">
+                <select name="complementary">
                     <option value="0">No</option>
                     <option value="1" selected>Yes</option>
                 </select>
@@ -76,31 +76,28 @@
                     <textarea id="fstSequencesInline" rows="5" cols="45" class="expandable-content"
                         name="fst_sequences_inline"></textarea>
                 </span>
-
-                <div id="checkZone">
-                    <input type="checkbox" checked="checked" id="checkbox">
-                    <span>show the sequence</span>
-
-                    <input type="checkbox" id="checkboxComplementary">
-                    <span>show the complementary sequence</span>
-
-                    <input type="checkbox" id="remove">
-                    <span>remove empty</span>
-                </div>
             </form>
 
             <a id="collapseResults" href="#" class="expand-section">Hide occurrences</a>
             <pre id="result" class="expandable-content"></pre>
 
+            <span id="checkZone">
+                <input type="checkbox" id="complementary">
+                <span>the complementary motifs</span>
 
+                <input type="checkbox" checked="checked" id="checkbox">
+                <span>show the sequence</span>
+
+                <input type="checkbox" id="checkboxComplementary">
+                <span>show the complementary sequence</span>
+
+                <input type="checkbox" id="remove">
+                <span>remove empty</span>
+            </span>
 
             <div id="paginator"></div>
 
             <div id="canvasContainer">
-                <div id="headerCanvas">
-                    <span id="name">Name</span>
-                    <span id="motifLocations">Motif Locations</span>
-                </div>
                 <div id="popUp"></div>
                 <canvas id="firstLayer">Your browser is not supported</canvas>
                 <canvas id="secondLayer"></canvas>

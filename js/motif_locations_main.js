@@ -1,5 +1,6 @@
 window.addEventListener('load', initFindMotifs);
 
+let motifsColor = {};
 let currentSeq = 0;
 let chartDrawer;
 
@@ -41,18 +42,20 @@ function perc2color(perc) { //создаем цвет для мотива
     return '#' + ('000000' + h.toString(16)).slice(-6);
 }
 
-function genColorsList(count) { //задаем цвета всем мотивам
+function genColorsList(data) {
+    let { motifs } = data;
     let res = [];
-    //console.log(count);
-    for (let i = 0; i < count; i++) {
-        let perc = 100.0 * i / count + 0.5;
-        //console.log(perc);
-        res.push(perc2color(perc));
+
+    for (let i = 0; i < motifs.length; i++) {
+        let { motif } = motifs[i];
+        res.push(motifsColor[motif]);
     }
+
     return res;
 }
 
 function getfilter() {
+    let complementary = document.getElementById("complementary").checked;
     let sequence = document.getElementById("checkbox").checked;
     let complSeq = document.getElementById("checkboxComplementary").checked;
     let removeEmpty = document.getElementById("remove").checked;
@@ -160,18 +163,18 @@ function reinitChartDrawer() { //обертка для запуска чартд
     let sequences = getSequences();
     seqSplited = splitSequences(sequences);
     let data = prepareData(_visibleSequences);
-
+    //console.log(data);
     const params = {
         firstLayer: "firstLayer",
         secondLayer: "secondLayer",
         thirdLayer: "thirdLayer",
         baseColor: "rgb(0, 0, 0)",
-        colors: genColorsList(getMotifs().length),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
+        colors: genColorsList(data),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
         visibleLines: Math.min(_visibleSequences, data.sequences.length), //max: 1308
         popUpSize: 100,
-        leftBorder: 100,
+        leftBorder: 0,
         oneLetterWidth: 8,
-        marginTop: 100,
+        marginTop: 60,
         stepLine: 76,
         neighbourhood: 3
     };
@@ -271,6 +274,8 @@ function setMotifs(motifsStr) { //при получении массивов з�
     for (let i = 0; i < motifs.length; i++) {
         let motif = motifs[i];
         let color = perc2color(100.0 * i / motifs.length + 0.5);
+        motifsColor[motif] = color;
+
         html += `<tr id="row_${motif}">	
                     <td><a style="color: ${color};" href="javascript:void(0)" onclick="changeMotif('${motif}');" >${motif} </a></td>	
                  </tr>`;
@@ -376,10 +381,10 @@ function prepareData(_visibleSequences) //создаем объект, кото�
     let txt = sequences;
     let motifs = getMotifs();
 
-    if (!sequences.length || !motifs.length) {
+    if (!sequences.length) {
         return result;
     }
-    
+
     let complementary = getComplementary();
 
     sequences = splitSequences(sequences);
@@ -401,130 +406,91 @@ function prepareData(_visibleSequences) //создаем объект, кото�
         }
         result.sequences.push(seq);
     }
-    let ratios = calcRatios(txt);
+    
 
-    for (let mi = 0; mi < motifs.length; mi++) {
-        let motif = motifs[mi];
-        let occurrences = [];
-        let counter = 0;
-        let complCounter = 0;
+    if (motifs.length) {
+        let ratios = calcRatios(txt);
+        
+        for (let mi = 0; mi < motifs.length; mi++) {
+            let motif = motifs[mi];
+            let occurrences = [];
+            let counter = 0;
+            let complCounter = 0;
 
-        for (let i = 0; i < sequences_count; i++) {
-            let found = false;
-            let [name, sequence] = sequences[i];
-            let ranges = [];
-            let index = firstMotifOccurrence(sequence, motif, 0, false);
-
-            while (index >= 0) {
-                ranges.push({
-                    start: index,
-                    end: index + motif.length
-                });
-                found = true;
-                index += 1;
-                index = firstMotifOccurrence(sequence, motif, index, false);
-            }
-            let occ = {
-                sequence_name: name,
-            };
-
-            if (ranges) {
-                occ.ranges = ranges;
-                occurrences.push(occ);
-            }
-
-            if (complementary) {
-                let occ = {
-                    sequence_name: name,
-                };
-                let compl_seq = compl_sequences[i];
-
-                let compl_ranges = [];
-                let index = firstMotifOccurrence(compl_seq, motif, 0, false);
+            for (let i = 0; i < sequences_count; i++) {
+                let found = false;
+                let [name, sequence] = sequences[i];
+                let ranges = [];
+                let index = firstMotifOccurrence(sequence, motif, 0, false);
 
                 while (index >= 0) {
-                    compl_ranges.push({
+                    ranges.push({
                         start: index,
                         end: index + motif.length
                     });
                     found = true;
                     index += 1;
-                    index = firstMotifOccurrence(compl_seq, motif, index, false);
+                    index = firstMotifOccurrence(sequence, motif, index, false);
                 }
+                let occ = {
+                    sequence_name: name,
+                };
 
-                if (compl_ranges) {
-                    occ.complementary_ranges = compl_ranges;
+                if (ranges) {
+                    occ.ranges = ranges;
                     occurrences.push(occ);
                 }
+
+                if (complementary) {
+                    let occ = {
+                        sequence_name: name,
+                    };
+                    let compl_seq = compl_sequences[i];
+
+                    let compl_ranges = [];
+                    let index = firstMotifOccurrence(compl_seq, motif, 0, false);
+
+                    while (index >= 0) {
+                        compl_ranges.push({
+                            start: index,
+                            end: index + motif.length
+                        });
+                        found = true;
+                        index += 1;
+                        index = firstMotifOccurrence(compl_seq, motif, index, false);
+                    }
+
+                    if (compl_ranges) {
+                        occ.complementary_ranges = compl_ranges;
+                        occurrences.push(occ);
+                    }
+                }
+
+                if (found) {
+                    complCounter++;
+                }
+
+            } // sequences
+            curMatches = complCounter ? complCounter : counter;
+            let chi2 = countProbs(motif, txt, sequences, curMatches, ratios);
+
+            if (occurrences.length) {
+                result.motifs.push({
+                    chi2,
+                    motif,
+                    occurrences
+                });
             }
+        } // motifs
+    }
 
-            if (found) {
-                complCounter++;
-            }
-
-        } // sequences
-        curMatches = complCounter ? complCounter : counter;
-        let chi2 = countProbs(motif, txt, sequences, curMatches, ratios);
-
-        if (occurrences.length) {
-            result.motifs.push({
-                chi2,
-                motif,
-                occurrences
-            });
-        }
-    } // motifs
     return result;
 }
 
 function recalculate() { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
-    let sequences = getSequences();
-
-    if (sequences.length === 0) {
+    if (!document.getElementById("fstSequencesInline").value) {
         return;
     }
-
-    let motifs = getMotifs();
-
-    if (motifs.length === 0) {
-        return;
-    }
-
-    let motif = motifs[0];
-    let complementary = getComplementary();
-
-    sequences = splitSequences(sequences);
-
-    let foundSequences = [];
-    let positionsFound = 0;
-    let resultHtml = "";
-
-    for (let i = 0; i < sequences.length; i++) {
-        let matched = false;
-        let index = -1;
-        let [name, sequence] = sequences[i];
-
-        index = firstMotifOccurrence(sequence, motif, 0, complementary);
-
-        while (index >= 0) {
-            matched = true;
-            positionsFound++;
-            sequence = sequence.substring(0, index) +
-                "<span class='highlight'>" +
-                sequence.substring(index, index + motif.length) +
-                "</span>" + sequence.substring(index + motif.length);
-            index = sequence.lastIndexOf("span") + 5;
-            index = firstMotifOccurrence(sequence, motif, index, complementary);
-        }
-
-        resultHtml += name + "\n" + sequence + "\n\n";
-        if (matched) {
-            foundSequences.push(i);
-        }
-    }
-
-    //document.getElementById("counter").innerHTML = "Matches: " + foundSequences.length + ", " + foundSequences.length/sequences.length + ", positions: "  + positionsFound + " \n\n" + JSON.stringify(foundSequences);
-    document.getElementById("result").innerHTML = resultHtml;
 
     reinitChartDrawer();
 }
