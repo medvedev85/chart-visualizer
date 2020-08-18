@@ -402,11 +402,39 @@ function countProbs(motif, splitted, curMatches, ratios) {
     let seqCount = splitted.length; //it count
     let prob1 = probInPos(motif, ratios);
     let prob2 = probInSec(prob1, seqLen);
-    let chi2 = calcChi2Double(prob2, curMatches, seqCount);
+    let chi2 = calcChi2Double(prob2, curMatches, seqCount);//seqcount - infos.count
+    let binomCoeffLogs = getBinomCoeffLogs(seqCount);
+    console.log(binomByHash(prob2, curMatches, binomCoeffLogs, seqCount));
     return chi2;
 }
 
-function binomByHash(prob2, curMatches) {
+function getBinomCoeffLogs(seqCount) {
+    let n = seqCount;
+    let binomCoeffLogs = [];
+    let logs = [];
+
+    logs.length = n + 1;
+    logs.fill(0);
+
+    for (let i = 0; i <= n; i++) {
+        if (i > 0) {
+            logs[i] -= Math.log(i);
+        }
+
+        logs[i] += Math.log(n - i + 1);
+    }
+
+    binomCoeffLogs.length = n + 1;
+    binomCoeffLogs.fill(0);
+
+    for (let i = 1; i <= n; i++) {
+        binomCoeffLogs[i] = logs[i] + binomCoeffLogs[i - 1];
+    }
+
+    return binomCoeffLogs;
+}
+
+function binomByHash(prob2, curMatches, binomCoeffLogs, seqCount) {
     let weight = curMatches;
 
     if (weight == 0) {
@@ -418,9 +446,15 @@ function binomByHash(prob2, curMatches) {
     let lp = Math.log(p);
     let lq = Math.log(q);
     let pq = p / q;
-    let prev = Math.exp()
+    let prev = Math.exp(binomCoeffLogs[weight - 1] + (weight - 1) * lp + (seqCount - weight + 1) * lq);
+    let res = 0;
+    
+    for (let i = weight; i <= seqCount; i++) {
+        prev *= pq * (seqCount - i + 1) / i;
+        res += prev;
+    }
 
-
+    return res * (-1);
 }
 
 function prepareData(_visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
