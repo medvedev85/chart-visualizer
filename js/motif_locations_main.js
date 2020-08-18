@@ -2,6 +2,7 @@ window.addEventListener('load', initFindMotifs);
 
 let motifsColor = {};
 let currentSeq = 0;
+let seqFile;
 let chartDrawer;
 
 function addChangeListener(id, callback) { //для отслеживания всякого
@@ -14,18 +15,17 @@ function addChangeListener(id, callback) { //для отслеживания в�
 function initListeners() { //ждем изменений в формочке
     addChangeListener("motifs", (e) => setMotifs(e.target.value));
     addChangeListener("complementary", () => recalculate());
-    addChangeListener("visibleSequences", () => recalculate());
+    addChangeListener("visibleSequences", () => changeVisible());
+    addChangeListener("fstSequences", () => recalculate());
     addChangeListener("fstSequencesInline", () => recalculate());
     addChangeListener("motifsTableBody", () => recalculate());
     addChangeListener("checkZone", () => getfilter());
 }
 
 async function initFindMotifs() { //перезапускаем логику если есть изменения
-    setMaxExpandableHeight(400);
     initListeners();
     await parseUrlParams();
     recalculate();
-    //toggleCollapsible(document.getElementById("collapseResults"));
 }
 
 function perc2color(perc) { //создаем цвет для мотива
@@ -54,9 +54,18 @@ function genColorsList(data) {
     return res;
 }
 
+function changeVisible() {
+    let pageVisible = document.getElementById("visibleSequences")
+
+    if (pageVisible > currentSeq) {
+        currentSeq = 0;
+    }
+
+    recalculate();
+}
+
 function getfilter() {
-    let complementary = document.getElementById("complementary").checked;
-    let sequence = document.getElementById("checkbox").checked;
+    let sequence = document.getElementById("checkboxSequence").checked;
     let complSeq = document.getElementById("checkboxComplementary").checked;
     let removeEmpty = document.getElementById("remove").checked;
 
@@ -109,11 +118,14 @@ function paginator(allSeq, _visibleSequences) {
     let over = Math.ceil(allSeq / _visibleSequences);
     let page = Math.ceil(currentSeq / _visibleSequences);
 
-    let previous = setNewButtonPaging("pageContainer", "<", (currentSeq - _visibleSequences) / _visibleSequences, _visibleSequences);
-    previous.disabled = currentSeq < _visibleSequences ? true : false;
+    if (over > 1) {
+        let previous = setNewButtonPaging("pageContainer", "<", (currentSeq - _visibleSequences) / _visibleSequences, _visibleSequences);
+        previous.disabled = currentSeq < _visibleSequences ? true : false;
+    }
+
     let nextPage;
 
-    if (over < 10) {
+    if (over > 1 && over < 10) {
         for (let i = 0; i < over; i++) {
             setNewButtonPaging("pageContainer", `${i + 1}`, i, _visibleSequences);
         }
@@ -154,8 +166,10 @@ function paginator(allSeq, _visibleSequences) {
         }
     }
 
-    let next = setNewButtonPaging("pageContainer", ">", page + 1, _visibleSequences);
-    next.disabled = currentSeq / _visibleSequences == over - 1 ? true : false;
+    if (over > 1) {
+        let next = setNewButtonPaging("pageContainer", ">", page + 1, _visibleSequences);
+        next.disabled = currentSeq / _visibleSequences == over - 1 ? true : false;
+    }
 }
 
 function reinitChartDrawer() { //обертка для запуска чартдровера
@@ -163,7 +177,6 @@ function reinitChartDrawer() { //обертка для запуска чартд
     let sequences = getSequences();
     seqSplited = splitSequences(sequences);
     let data = prepareData(_visibleSequences);
-    //console.log(data);
     const params = {
         firstLayer: "firstLayer",
         secondLayer: "secondLayer",
@@ -183,9 +196,7 @@ function reinitChartDrawer() { //обертка для запуска чартд
     chartDrawer = new ChartDrawer(params);
     getfilter();
     paginator(seqSplited.length, _visibleSequences);
-    //initButtonClicks("123");
 }
-
 
 async function parseUrlParams() { //подставляет значения в урл 
     const queryString = window.location.search;
@@ -287,9 +298,23 @@ function setMotifs(motifsStr) { //при получении массивов з�
 }
 
 //////// Motif List end
+function readFile(input) {
+    let file = input.files[0];
+    let reader = new FileReader();
+
+    reader.readAsText(file);
+
+    reader.onload = function () {
+        seqFile = reader.result.toUpperCase();
+        recalculate();
+    };
+    reader.onerror = function () {
+        seqFile = "";
+    };
+}
 
 function getSequences() { // получаем sequences из формы на странице
-    let sequences = document.getElementById("fstSequencesInline").value.toUpperCase();
+    let sequences = seqFile || document.getElementById("fstSequencesInline").value.toUpperCase();
     return sequences;
 }
 
@@ -359,20 +384,48 @@ function getMotifsOnChecksBoxes() {
 }
 
 function getComplementary() { //выясняем, надо ли показывать комплиментарную последовательность
-    return document.getElementById("complementary").value === "1";
+    let complementary = document.getElementById("complementary").value;
+    let checkbox = document.getElementById("checkboxComplementary");
+
+    if (complementary == 0) {
+        checkbox.checked = false;
+        checkbox.disabled = true;
+    } else {
+        checkbox.disabled = false;
+    }
+
+    return document.getElementById("complementary").value == 1;
 }
 
-function countProbs(motif, text, splitted, curMatches, ratios) {
+function countProbs(motif, splitted, curMatches, ratios) {
     let seqLen = splitted[0][1].length;
-    let seqCount = splitted.length;
+    let seqCount = splitted.length; //it count
     let prob1 = probInPos(motif, ratios);
     let prob2 = probInSec(prob1, seqLen);
     let chi2 = calcChi2Double(prob2, curMatches, seqCount);
     return chi2;
 }
 
+function binomByHash(prob2, curMatches) {
+    let weight = curMatches;
+
+    if (weight == 0) {
+        return 0;
+    }
+
+    let p = prob2;
+    let q = 1 - p;
+    let lp = Math.log(p);
+    let lq = Math.log(q);
+    let pq = p / q;
+    let prev = Math.exp()
+
+
+}
+
 function prepareData(_visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
 {
+    let t0 = performance.now();
     let result = {
         "sequences": [],
         "motifs": []
@@ -406,11 +459,10 @@ function prepareData(_visibleSequences) //создаем объект, кото�
         }
         result.sequences.push(seq);
     }
-    
 
     if (motifs.length) {
         let ratios = calcRatios(txt);
-        
+
         for (let mi = 0; mi < motifs.length; mi++) {
             let motif = motifs[mi];
             let occurrences = [];
@@ -472,7 +524,7 @@ function prepareData(_visibleSequences) //создаем объект, кото�
 
             } // sequences
             curMatches = complCounter ? complCounter : counter;
-            let chi2 = countProbs(motif, txt, sequences, curMatches, ratios);
+            let chi2 = countProbs(motif, sequences, curMatches, ratios);
 
             if (occurrences.length) {
                 result.motifs.push({
@@ -484,12 +536,55 @@ function prepareData(_visibleSequences) //создаем объект, кото�
         } // motifs
     }
 
+    let t1 = performance.now();
+    console.log("prepareData: " + (t1 - t0) + " milliseconds.");
     return result;
 }
 
 function recalculate() { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
-    if (!document.getElementById("fstSequencesInline").value) {
+    if (!seqFile && !document.getElementById("fstSequencesInline").value) {
         return;
+    }
+
+    let sequences = getSequences();
+    let motifs = getMotifs();
+
+    if (motifs.length && sequences.length) {
+        let motif = motifs[0];
+        let complementary = getComplementary();
+
+        sequences = splitSequences(sequences);
+
+        let foundSequences = [];
+        let positionsFound = 0;
+        let resultHtml = "";
+
+        for (let i = 0; i < sequences.length; i++) {
+            let matched = false;
+            let index = -1;
+            let [name, sequence] = sequences[i];
+
+            index = firstMotifOccurrence(sequence, motif, 0, complementary);
+
+            while (index >= 0) {
+                matched = true;
+                positionsFound++;
+                sequence = sequence.substring(0, index) +
+                    "<span class='highlight'>" +
+                    sequence.substring(index, index + motif.length) +
+                    "</span>" + sequence.substring(index + motif.length);
+                index = sequence.lastIndexOf("span") + 5;
+                index = firstMotifOccurrence(sequence, motif, index, complementary);
+            }
+
+            resultHtml += name + "\n" + sequence + "\n\n";
+            if (matched) {
+                foundSequences.push(i);
+            }
+        }
+
+        //document.getElementById("counter").innerHTML = "Matches: " + foundSequences.length + ", " + foundSequences.length/sequences.length + ", positions: "  + positionsFound + " \n\n" + JSON.stringify(foundSequences);
+        document.getElementById("result").innerHTML = resultHtml;
     }
 
     reinitChartDrawer();

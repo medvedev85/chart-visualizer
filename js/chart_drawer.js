@@ -194,7 +194,7 @@ class ChartDrawer {
     }
 
     drawOneSegment(idSegment, turn) {
-        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine} = this.params;
+        let { baseColor, leftBorder, oneLetterWidth, marginTop, stepLine } = this.params;
         let { rects, rectsCompl, sequence } = this.params.segments[idSegment];
         let lineWidth = oneLetterWidth * sequence.length;
         let rightBorder = lineWidth + leftBorder;
@@ -262,7 +262,7 @@ class ChartDrawer {
 
     draw(idSegment) {
         //document.getElementById('headerCanvas').style.display = 'block';
-
+        let t0 = performance.now();
         this.getNewNamesElement();
         this.getCatalogue(idSegment);
         this.selectColor();
@@ -271,6 +271,8 @@ class ChartDrawer {
             let id = this.catalogue[i];
             this.drawOneSegment(id, i);
         }
+        let t1 = performance.now();
+        console.log("drow: " + (t1 - t0) + " milliseconds.");
     }
 
     ////////////////     pop up     \\\\\\\\\\\\\\\\\
@@ -305,7 +307,7 @@ class ChartDrawer {
                     secondCtx.lineWidth = 1;
                 }
             }
-            
+
             for (let k = 0; k < rectsCompl.length; k++) {
                 let segmentMotif = rectsCompl[k].motif;
 
@@ -440,6 +442,7 @@ class ChartDrawer {
 /////////////    parser    \\\\\\\\\\\\\\\
 
 function parser(inputData, params) {
+    let t0 = performance.now();
     let rects = [];
     let { motifs, sequences } = inputData;
 
@@ -496,5 +499,7 @@ function parser(inputData, params) {
         }
     }
     sequences.filledLines = Array.from(filledLines);
+    let t1 = performance.now();
+    console.log("parser: " + (t1 - t0) + " milliseconds.");
     return params.segments = sequences;
 }

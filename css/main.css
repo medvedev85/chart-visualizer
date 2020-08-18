@@ -12,6 +12,10 @@
   grid-area: nav;
 }
 
+.changeVisible {
+  margin-left: 3px;
+}
+
 .side {
   grid-area: sidebar;
 }
@@ -240,4 +244,20 @@ article .progress-bar {
 article .button-error {
     margin-top: 20px;
     margin: 2rem auto 0 0;
+}
+
+.hide {
+  display: none; 
+}
+.hide + label ~ div{
+  display: none;
+}
+.hide + label {
+  color: blue;
+  cursor: pointer;
+  display: inline-block; 
+}
+.hide:checked + label + div {
+  display: block; 
+  color: #000;
 }

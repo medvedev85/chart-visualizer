@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="../css/form.css">
     <link rel="stylesheet" href="../css/motif_location.css">
     <link rel="stylesheet" href="../css/chart_drawer.css">
-    <script src="../js/main.js"></script>
     <script src="../js/chart_drawer.js"></script>
     <script src="../js/motif_locations_main.js"></script>
     <script src="../js/find_motifs.js"></script>
@@ -31,6 +30,41 @@
                 <li><a href="https://frfry.com/motif_finder_web">Home</a></li>
                 <li><a href="https://frfry.com/motif_finder_web/tasks">Tasks list</a></li>
             </ul>
+            <span class="changeVisible">
+                <label for="visibleSequences">Visible sequences </label>
+                <select id="visibleSequences" name="visibleSequences">
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="150">150</option>
+                    <option value="200">200</option>
+                    <option value="250">250</option>
+                    <option value="300">300</option>
+                    <option value="350">350</option>
+                    <option value="400">400</option>
+                    <option value="450">450</option>
+                    <option value="500">500</option>
+                </select>
+            </span>
+
+            <table class="pure-table pure-table-striped">
+                <thead>
+                <tbody id="checkZone">
+                    <tr>
+                        <td>show the sequence</td>
+                        <td><input type="checkbox" checked="checked" id="checkboxSequence"></td>
+                    </tr>
+                    <tr>
+                        <td>show the complementary sequence</td>
+                        <td><input type="checkbox" id="checkboxComplementary"></td>
+                    </tr>
+                    <tr>
+                        <td>remove empty</td>
+                        <td><input type="checkbox" id="remove"></td>
+                    </tr>
+                </tbody>
+                </thead>
+            </table>
+
             <table class="pure-table pure-table-striped">
                 <thead>
                     <tr>
@@ -49,53 +83,30 @@
             <form method="post">
                 <label for="motifs" class="minimum-chi2">Motifs</label>
                 <input id="motifs" type="text" name="minimum_chi2" placeholder="example: ATWWCYNN, ATGCRRRR">
+
                 <label for="complementary">Complementary</label>
-                <select name="complementary">
+                <select id="complementary" name="complementary">
                     <option value="0">No</option>
                     <option value="1" selected>Yes</option>
                 </select>
 
-                <label for="visibleSequences">Visible sequences</label>
-                <select id="visibleSequences" name="visibleSequences">
-                    <option value="50" selected>50</option>
-                    <option value="100">100</option>
-                    <option value="150">150</option>
-                    <option value="200">200</option>
-                    <option value="250">250</option>
-                    <option value="300">300</option>
-                    <option value="350">350</option>
-                    <option value="400">400</option>
-                    <option value="450">450</option>
-                    <option value="500">500</option>
-                </select>
-
                 <label for="fstSequences">Sequences set</label>
                 <span>
-                    <input type="file" id="fstSequences" name="fst_sequences_file">
-                    <a href="#" class="expand-section">insert inline</a>
-                    <textarea id="fstSequencesInline" rows="5" cols="45" class="expandable-content"
-                        name="fst_sequences_inline"></textarea>
+                    <input type="file" onchange="readFile(this)" id="fstSequences" name="fst_sequences_file">
+                    <input type="checkbox" id="hd-1" class="hide" />
+                    <label for="hd-1">insert inline</label>
+                    <div><textarea id="fstSequencesInline" rows="5" cols="39" name="fst_sequences_inline"></textarea>
+                    </div>
                 </span>
             </form>
 
-            <a id="collapseResults" href="#" class="expand-section">Hide occurrences</a>
-            <pre id="result" class="expandable-content"></pre>
-
-            <span id="checkZone">
-                <input type="checkbox" id="complementary">
-                <span>the complementary motifs</span>
-
-                <input type="checkbox" checked="checked" id="checkbox">
-                <span>show the sequence</span>
-
-                <input type="checkbox" id="checkboxComplementary">
-                <span>show the complementary sequence</span>
-
-                <input type="checkbox" id="remove">
-                <span>remove empty</span>
+            <span>
+                <input type="checkbox" id="hd-2" class="hide" />
+                <label for="hd-2">Show occurrences</label>
+                <div id="result"></div>
             </span>
 
-            <div id="paginator"></div>
+            <span id="paginator"></span>
 
             <div id="canvasContainer">
                 <div id="popUp"></div>

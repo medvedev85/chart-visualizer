@@ -7,8 +7,9 @@
   }
   
   #result {
-      width: 485px;
-      height: 600px;
+      width: 625px;
+      height: 250px;
+      overflow-y: scroll;
       white-space: pre-wrap;
       word-wrap: break-word;
       border: 1px solid #c1c1c1;
