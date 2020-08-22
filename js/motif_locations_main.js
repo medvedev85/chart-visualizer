@@ -1,34 +1,6 @@
-window.addEventListener('load', initFindMotifs);
+export let seqFile;
 
-let motifsColor = {};
-let currentSeq = 0;
-let seqFile;
-let chartDrawer;
-
-function addChangeListener(id, callback) { //для отслеживания всякого
-    const element = document.getElementById(id);
-    if (element) {
-        element.addEventListener('input', callback);
-    }
-}
-
-function initListeners() { //ждем изменений в формочке
-    addChangeListener("motifs", (e) => setMotifs(e.target.value));
-    addChangeListener("complementary", () => recalculate());
-    addChangeListener("visibleSequences", () => changeVisible());
-    addChangeListener("fstSequences", () => recalculate());
-    addChangeListener("fstSequencesInline", () => recalculate());
-    addChangeListener("motifsTableBody", () => recalculate());
-    addChangeListener("checkZone", () => getfilter());
-}
-
-async function initFindMotifs() { //перезапускаем логику если есть изменения
-    initListeners();
-    await parseUrlParams();
-    recalculate();
-}
-
-function perc2color(perc) { //создаем цвет для мотива
+export function perc2color(perc) { //создаем цвет для мотива
     var r, g, b = 0;
     if (perc < 50) {
         r = 255;
@@ -42,7 +14,7 @@ function perc2color(perc) { //создаем цвет для мотива
     return '#' + ('000000' + h.toString(16)).slice(-6);
 }
 
-function genColorsList(data) {
+export function genColorsList(data) {
     let { motifs } = data;
     let res = [];
 
@@ -54,7 +26,7 @@ function genColorsList(data) {
     return res;
 }
 
-function changeVisible() {
+export function changeVisible() {
     let pageVisible = document.getElementById("visibleSequences")
 
     if (pageVisible > currentSeq) {
@@ -64,7 +36,7 @@ function changeVisible() {
     recalculate();
 }
 
-function getfilter() {
+export function getfilter() {
     let sequence = document.getElementById("checkboxSequence").checked;
     let complSeq = document.getElementById("checkboxComplementary").checked;
     let removeEmpty = document.getElementById("remove").checked;
@@ -80,7 +52,7 @@ function getfilter() {
     chartDrawer.chooseShowSegments(sequence, complSeq);
 }
 
-function createNewPageContainer() {
+export function createNewPageContainer() {
     let container = document.getElementById("pageContainer");
     let paginator = document.getElementById("paginator");
 
@@ -93,7 +65,7 @@ function createNewPageContainer() {
     paginator.append(сontainer);
 }
 
-function setNewButtonPaging(id, value, page, _visibleSequences) {
+export function setNewButtonPaging(id, value, page, _visibleSequences) {
     let input = document.createElement("input");
     let container = document.getElementById(id);
 
@@ -108,12 +80,12 @@ function setNewButtonPaging(id, value, page, _visibleSequences) {
     return input;
 }
 
-function pageClick(nextSeq, _visibleSequences) {
+export function pageClick(nextSeq, _visibleSequences) {
     currentSeq = nextSeq * _visibleSequences;
     recalculate();
 }
 
-function paginator(allSeq, _visibleSequences) {
+export function paginator(allSeq, _visibleSequences) {
     createNewPageContainer();
     let over = Math.ceil(allSeq / _visibleSequences);
     let page = Math.ceil(currentSeq / _visibleSequences);
@@ -172,78 +144,23 @@ function paginator(allSeq, _visibleSequences) {
     }
 }
 
-function reinitChartDrawer() { //обертка для запуска чартдровера
-    let _visibleSequences = getVisibleSequences();
-    let sequences = getSequences();
-    seqSplited = splitSequences(sequences);
-    let data = prepareData(_visibleSequences);
-    const params = {
-        firstLayer: "firstLayer",
-        secondLayer: "secondLayer",
-        thirdLayer: "thirdLayer",
-        baseColor: "rgb(0, 0, 0)",
-        colors: genColorsList(data),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
-        visibleLines: Math.min(_visibleSequences, data.sequences.length), //max: 1308
-        popUpSize: 100,
-        leftBorder: 0,
-        oneLetterWidth: 8,
-        marginTop: 60,
-        stepLine: 76,
-        neighbourhood: 3
-    };
 
-    parser(data, params);
-    chartDrawer = new ChartDrawer(params);
-    getfilter();
-    paginator(seqSplited.length, _visibleSequences);
-}
 
-async function parseUrlParams() { //подставляет значения в урл 
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
 
-    // 1. Motif	
-    const motif = urlParams.get('motif') || "";
-    if (motif) {
-        setInputValue("motifs", motif);
-        setMotifs(motif);
-    }
 
-    // 2. Sequence_url
-    const sequences_url = urlParams.get('sequences_url') || "";
-    if (sequences_url) {
-        let response = await fetch(sequences_url);
-        let text = await response.text();
-        if (text) {
-            setInputValue('fstSequencesInline', text);
-        }
-    }
-
-    // 3. Complementary
-    const complementary = urlParams.get('complementary') || "";
-    if (complementary === "0") {
-        setInputValue("complementary", complementary);
-    }
-
-    const visibleSequences = urlParams.get('visibleSequences');
-    if (visibleSequences) {
-        setInputValue("visibleSequences", visibleSequences);
-    }
-}
-
-function setInputValue(id, text) { //устанавливаем значение text элементу id через .value
+export function setInputValue(id, text) { //устанавливаем значение text элементу id через .value
     let element = document.getElementById(id);
     element.value = text;
 }
 
-function setElementText(id, text) { //помещаем данные на страницу через innerHTML
+export function setElementText(id, text) { //помещаем данные на страницу через innerHTML
     let element = document.getElementById(id);
     element.innerHTML = text;
 }
 
 ///////// Motif list begin
 
-function splitMotifs(motifsStr) { //создаем массив с мотивами
+export function splitMotifs(motifsStr) { //создаем массив с мотивами
     let motifs = motifsStr.toUpperCase().split(" ").join(",").split(",");
     let res = [];
     for (let i = 0; i < motifs.length; i++) {
@@ -255,7 +172,7 @@ function splitMotifs(motifsStr) { //создаем массив с мотива�
     return res;
 }
 
-function createCheckBox(id) {
+export function createCheckBox(id) {
     let elem = document.getElementById(`row_${id}`);
     let tableSector = document.createElement("td");
     let box = document.createElement("input");
@@ -266,13 +183,13 @@ function createCheckBox(id) {
     tableSector.append(box);
 }
 
-function createAllCheckBoxes(motifs) {
+export function createAllCheckBoxes(motifs) {
     for (let i = 0; i < motifs.length; i++) {
         createCheckBox(motifs[i]);
     }
 }
 
-function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)	
+export function setMotifs(motifsStr) { //при получении массивов задаем им цвет, распологаем списком слева, перезапускаем работу всего приложения (перезаписываем дату)	
     let motifs = splitMotifs(motifsStr);
     let html = "";
 
@@ -298,36 +215,22 @@ function setMotifs(motifsStr) { //при получении массивов з�
 }
 
 //////// Motif List end
-function readFile(input) {
-    let file = input.files[0];
-    let reader = new FileReader();
 
-    reader.readAsText(file);
-
-    reader.onload = function () {
-        seqFile = reader.result.toUpperCase();
-        recalculate();
-    };
-    reader.onerror = function () {
-        seqFile = "";
-    };
-}
-
-function getSequences() { // получаем sequences из формы на странице
+export function getSequences() { // получаем sequences из формы на странице
     let sequences = seqFile || document.getElementById("fstSequencesInline").value.toUpperCase();
     return sequences;
 }
 
-function getVisibleSequences() {
+export function getVisibleSequences() {
     return document.getElementById("visibleSequences").value;
 }
 
-function getMotifs() { //получаем мотивы из формы на странице
+export function getMotifs() { //получаем мотивы из формы на странице
     let motifs = getMotifsOnChecksBoxes();
     return splitMotifs(motifs);
 }
 
-function changeMotif(id) {
+export function changeMotif(id) {
     let table = document.getElementById("motifsTableBody");
     let checkBoxes = table.getElementsByTagName("input");
 
@@ -341,7 +244,7 @@ function changeMotif(id) {
     recalculate();
 }
 
-function selectCheckAllBox() {
+export function selectCheckAllBox() {
     let table = document.getElementById("motifsTableBody");
     let motifSelecter = document.getElementById("motifSelecter");
     let checkBoxes = table.getElementsByTagName("input");
@@ -360,7 +263,7 @@ function selectCheckAllBox() {
     recalculate();
 }
 
-function getMotifsOnChecksBoxes() {
+export function getMotifsOnChecksBoxes() {
     let table = document.getElementById("motifsTableBody");
     let motifSelecter = document.getElementById("motifSelecter");
     let checkBoxes = table.getElementsByTagName("input");
@@ -383,7 +286,7 @@ function getMotifsOnChecksBoxes() {
     return motifs;
 }
 
-function getComplementary() { //выясняем, надо ли показывать комплиментарную последовательность
+export function getComplementary() { //выясняем, надо ли показывать комплиментарную последовательность
     let complementary = document.getElementById("complementary").value;
     let checkbox = document.getElementById("checkboxComplementary");
 
@@ -397,18 +300,18 @@ function getComplementary() { //выясняем, надо ли показыва
     return document.getElementById("complementary").value == 1;
 }
 
-function countProbs(motif, splitted, curMatches, ratios) {
+export function countProbs(motif, splitted, curMatches, ratios) {
     let seqLen = splitted[0][1].length;
     let seqCount = splitted.length; //it count
     let prob1 = probInPos(motif, ratios);
     let prob2 = probInSec(prob1, seqLen);
     let chi2 = calcChi2Double(prob2, curMatches, seqCount);//seqcount - infos.count
-    let binomCoeffLogs = getBinomCoeffLogs(seqCount);
-    console.log(binomByHash(prob2, curMatches, binomCoeffLogs, seqCount));
+    //let binomCoeffLogs = getBinomCoeffLogs(seqCount);
+    //console.log(binomByHash(prob2, curMatches, binomCoeffLogs, seqCount));
     return chi2;
 }
 
-function getBinomCoeffLogs(seqCount) {
+export function getBinomCoeffLogs(seqCount) {
     let n = seqCount;
     let binomCoeffLogs = [];
     let logs = [];
@@ -434,7 +337,7 @@ function getBinomCoeffLogs(seqCount) {
     return binomCoeffLogs;
 }
 
-function binomByHash(prob2, curMatches, binomCoeffLogs, seqCount) {
+export function binomByHash(prob2, curMatches, binomCoeffLogs, seqCount) {
     let weight = curMatches;
 
     if (weight == 0) {
@@ -448,16 +351,16 @@ function binomByHash(prob2, curMatches, binomCoeffLogs, seqCount) {
     let pq = p / q;
     let prev = Math.exp(binomCoeffLogs[weight - 1] + (weight - 1) * lp + (seqCount - weight + 1) * lq);
     let res = 0;
-    
+
     for (let i = weight; i <= seqCount; i++) {
         prev *= pq * (seqCount - i + 1) / i;
         res += prev;
     }
 
-    return res * (-1);
+    return Math.log10(res) * (-1);
 }
 
-function prepareData(_visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
+export function prepareData(_visibleSequences) //создаем объект, который можно скормить парсеру и чартдроверу
 {
     let t0 = performance.now();
     let result = {
@@ -575,51 +478,174 @@ function prepareData(_visibleSequences) //создаем объект, кото�
     return result;
 }
 
-function recalculate() { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
-    if (!seqFile && !document.getElementById("fstSequencesInline").value) {
-        return;
+///\\\\///\\\\//\\////\///find motifs.js/////\\\/////\\///\////\\\////\\\///\\//
+
+export function firstMotifOccurrence(sequence, motif, offset, complementary) { //определяем старт рейнджей
+    let fwdIdx = -1;
+    for (let i = offset; i < sequence.length - motif.length + 1; i++) {
+        if (motifCompare(sequence, i, motif, false)) {
+            fwdIdx = i;
+            break;
+        }
     }
 
-    let sequences = getSequences();
-    let motifs = getMotifs();
-
-    if (motifs.length && sequences.length) {
-        let motif = motifs[0];
-        let complementary = getComplementary();
-
-        sequences = splitSequences(sequences);
-
-        let foundSequences = [];
-        let positionsFound = 0;
-        let resultHtml = "";
-
-        for (let i = 0; i < sequences.length; i++) {
-            let matched = false;
-            let index = -1;
-            let [name, sequence] = sequences[i];
-
-            index = firstMotifOccurrence(sequence, motif, 0, complementary);
-
-            while (index >= 0) {
-                matched = true;
-                positionsFound++;
-                sequence = sequence.substring(0, index) +
-                    "<span class='highlight'>" +
-                    sequence.substring(index, index + motif.length) +
-                    "</span>" + sequence.substring(index + motif.length);
-                index = sequence.lastIndexOf("span") + 5;
-                index = firstMotifOccurrence(sequence, motif, index, complementary);
-            }
-
-            resultHtml += name + "\n" + sequence + "\n\n";
-            if (matched) {
-                foundSequences.push(i);
+    let complIdx = -1;
+    if (complementary) {
+        for (let i = offset; i < sequence.length - motif.length + 1; i++) {
+            if (motifCompare(sequence, i, motif, true)) {
+                complIdx = i;
+                break;
             }
         }
-
-        //document.getElementById("counter").innerHTML = "Matches: " + foundSequences.length + ", " + foundSequences.length/sequences.length + ", positions: "  + positionsFound + " \n\n" + JSON.stringify(foundSequences);
-        document.getElementById("result").innerHTML = resultHtml;
+    }
+    if (fwdIdx == -1) {
+        return complIdx;
+    }
+    if (complIdx == -1) {
+        return fwdIdx;
     }
 
-    reinitChartDrawer();
+    let idx = fwdIdx < complIdx ? fwdIdx : complIdx;
+    return idx;
+}
+
+const motifsMap = {
+            'A': 'A',
+            'T': 'T',
+            'G': 'G',
+            'C': 'C',
+            'W': 'AT',
+            'R': 'AG',
+            'K': 'TG',
+            'D': 'ATG',
+            'M': 'AC',
+            'Y': 'CT',
+            'H': 'ATC',
+            'S': 'CG',
+            'V': 'AGC',
+            'B': 'CGT',
+            'N': 'ACGT'};
+
+const complMotifsMap  = {
+            'A': 'T',
+            'T': 'A',
+            'G': 'C',
+            'C': 'G',
+            'W': 'TA',
+            'R': 'TC',
+            'K': 'AC',
+            'D': 'TAC',
+            'M': 'TG',
+            'Y': 'GA',
+            'H': 'TAG',
+            'S': 'GC',
+            'V': 'TCG',
+            'B': 'GCA',
+            'N': 'ACGT'};
+
+export function motifCompare(sequence, offset, motif, complementary) { //находим соответствие мотивов с последовательностями
+    for (let i = 0; i < motif.length; i++) {
+        let strIdx = complementary ? offset + (motif.length-1-i) : i+offset;
+        let sequenceSymbol = sequence[strIdx];
+        if ("ACGT".indexOf(sequenceSymbol) == -1) {
+            return false;
+        }
+
+        let motifSymbol = motif[i];
+        if (!complementary && sequenceSymbol === motifSymbol) continue;
+        if ("ATGCWRKDMYHSVBN".indexOf(motifSymbol) == -1) {
+            return false;
+        }
+        let curMotifsMap = complementary ? complMotifsMap[motifSymbol] : motifsMap[motifSymbol];
+        if (curMotifsMap.indexOf(sequenceSymbol) == -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+export function splitSequences(text) { // получаем sequences из текстовых данных
+    let sequences = text.split(">").filter(s => s);
+
+    sequences = sequences.map(s => "> " + s.trim())
+    let i = 1;
+    sequences = sequences.map(s => {
+        let lines = s.split("\n");
+        let name = lines[0]
+        if (!name.endsWith(i)) {
+            name += ", " + i ;
+        }
+        i += 1;
+        return [name, lines.splice(1).join("")]
+    });
+    return sequences;
+}
+
+export function makeComplementarySequence(sequence) { // получаем complementary_sequences
+    let complementary  = "";
+    for (let i = sequence.length - 1; i >= 0; i--) {
+        complementary += complMotifsMap[sequence[i]];
+    }
+    return complementary;
+}
+
+export function calcFrequencies(text) {
+    let splitted = splitSequences(text);
+    let counts = { 'A': 0, 'T': 0, 'G': 0, 'C': 0 };
+
+    let total = 0;
+    for (let i = 0; i < splitted.length; i++) {
+        let seq = splitted[i][1];
+        total += seq.length;
+        seq.split('').forEach(function (s) {
+            counts[s] ? counts[s]++ : counts[s] = 1;
+        });
+    }
+    return counts;
+}
+
+export function countTotalLen(text) {
+    let splitted = splitSequences(text);
+    let total = 0;
+    for (let i = 0; i < splitted.length; i++)
+        total += splitted[i][1].trim().length;
+    return total;
+}
+
+export function calcRatios(text) {
+    let t0 = performance.now();
+    let counts = calcFrequencies(text);
+    let total = countTotalLen(text);
+
+    for (var l in counts) {
+        counts[l] /= total;
+    }
+    let t1 = performance.now();
+    console.log("calcRatios: " + (t1 - t0) + " milliseconds.");
+    return counts
+}
+
+export function probInPos(motif, ratios) {
+    var prob1 = 1.0;
+    motif.toUpperCase().split("").forEach(function (s) {
+        let symbols = motifsMap[s];
+        let curP = 0.0;
+        symbols.split("").forEach(function (symb) {
+            curP += ratios[symb];
+        });
+        prob1 *= curP;
+    });
+    return prob1;
+}
+
+export function probInSec(prob1, seq_len) {
+    var prob2 = 1.0 - Math.exp(-prob1 * (seq_len - 7) * 2);
+    return prob2;
+}
+
+export function calcChi2Double(prob_pos, matches, seq_count) {
+    var expected = prob_pos * seq_count;
+    var x = expected - matches;
+    var chi2 = x * x / (expected);
+    return chi2;
 }
