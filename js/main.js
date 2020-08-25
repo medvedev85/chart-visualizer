@@ -1,12 +1,11 @@
-import * as motifLocations from "./motif_locations_main.js";
+import { seqFile, genColorsList, changeVisible, getfilter, paginator, setInputValue, setMotifs, getSequences, getVisibleSequences, getMotifs, getComplementary, } from "./motif_locations_main.js";
+import { firstMotifOccurrence, splitSequences } from "./find_motifs.js";
+import { parser, ChartDrawer } from "./chart_drawer.js";
 
 window.addEventListener('load', initFindMotifs);
 
-let motifsColor = {};
-let currentSeq = 0;
 let seqSplited;
-
-let chartDrawer;
+export let chartDrawer;
 
 function addChangeListener(id, callback) { //для отслеживания всякого
     const element = document.getElementById(id);
@@ -71,24 +70,16 @@ function readFile(input) {
     reader.readAsText(file);
 
     reader.onload = function () {
-        motifLocations.seqFile = reader.result.toUpperCase();
+        seqFile = reader.result.toUpperCase();
         recalculate();
     };
     reader.onerror = function () {
-        motifLocations.seqFile = "";
+        seqFile = "";
     };
 }
 
-
-
-
-
-
-
 function reinitChartDrawer() { //обертка для запуска чартдровера
-    let _visibleSequences = motifLocations.getVisibleSequences();
-    let sequences = motifLocations.getSequences();
-    seqSplited = motifLocations.splitSequences(sequences);
+    let _visibleSequences = getVisibleSequences();
     let data;
 
     let worker = new Worker('../js/worker.js', { type: "module" });
@@ -96,47 +87,48 @@ function reinitChartDrawer() { //обертка для запуска чартд
 
     worker.onmessage = function (e) {
         data = e.data;
-        console.log(e);
+        testInit(data);
     }
-
-
-
-    const params = {
-        firstLayer: "firstLayer",
-        secondLayer: "secondLayer",
-        thirdLayer: "thirdLayer",
-        baseColor: "rgb(0, 0, 0)",
-        colors: motifLocations.genColorsList(data),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
-        visibleLines: Math.min(_visibleSequences, data.sequences.length), //max: 1308
-        popUpSize: 100,
-        leftBorder: 0,
-        oneLetterWidth: 8,
-        marginTop: 60,
-        stepLine: 76,
-        neighbourhood: 3
-    };
-
-
-
-    parser(data, params);
-    chartDrawer = new ChartDrawer(params);
-    getfilter();
-    paginator(seqSplited.length, _visibleSequences);
 }
 
-function recalculate() { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
-    if (!motifLocations.seqFile && !document.getElementById("fstSequencesInline").value) {
+function testInit(data) {
+        let sequences = getSequences();
+        seqSplited = splitSequences(sequences);
+
+        const params = {
+            firstLayer: "firstLayer",
+            secondLayer: "secondLayer",
+            thirdLayer: "thirdLayer",
+            baseColor: "rgb(0, 0, 0)",
+            colors: genColorsList(data),//["blue", "red", "pink", "green", "brown", "orange", "coral", "purple"],
+            visibleLines: Math.min(_visibleSequences, data.sequences.length), //max: 1308
+            popUpSize: 100,
+            leftBorder: 0,
+            oneLetterWidth: 8,
+            marginTop: 60,
+            stepLine: 76,
+            neighbourhood: 3
+        };
+
+        parser(data, params);
+        chartDrawer = new ChartDrawer(params);
+        getfilter();
+        paginator(seqSplited.length, _visibleSequences);
+    }
+
+export function recalculate() { //перезапускаем работу, если в формочку внесли что-то новое и оно соответствует требованиям
+    if (!seqFile && !document.getElementById("fstSequencesInline").value) {
         return;
     }
 
-    let sequences = motifLocations.getSequences();
-    let motifs = motifLocations.getMotifs();
+    let sequences = getSequences();
+    let motifs = getMotifs();
 
     if (motifs.length && sequences.length) {
         let motif = motifs[0];
-        let complementary = motifLocations.getComplementary();
+        let complementary = getComplementary();
 
-        sequences = motifLocations.splitSequences(sequences);
+        sequences = splitSequences(sequences);
 
         let foundSequences = [];
         let positionsFound = 0;

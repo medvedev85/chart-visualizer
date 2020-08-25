@@ -1,5 +1,5 @@
 "use strict"
-class ChartDrawer {
+export class ChartDrawer {
     constructor(params) {
         const self = this;
         this.params = params;
@@ -441,7 +441,7 @@ class ChartDrawer {
 
 /////////////    parser    \\\\\\\\\\\\\\\
 
-function parser(inputData, params) {
+export function parser(inputData, params) {
     let t0 = performance.now();
     let rects = [];
     let { motifs, sequences } = inputData;

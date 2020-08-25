@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="../css/form.css">
     <link rel="stylesheet" href="../css/motif_location.css">
     <link rel="stylesheet" href="../css/chart_drawer.css">
-    
-    <script type="module" dist="../js/chart_drawer.js"></script>
-    <script type="module" dist="../js/motif_locations_main.js"></script>
-    <script type="module" dist="../js/find_motifs.js"></script>
     <script type="module" dist="../js/worker.js"></script>
     <script type="module" src="../js/main.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css"
@@ -94,7 +90,7 @@
 
                 <label for="fstSequences">Sequences set</label>
                 <span>
-                    <input type="file" id="fstSequences" name="fst_sequences_file">
+                    <input type="file" onchange="readFile(this)" id="fstSequences" name="fst_sequences_file">
                     <input type="checkbox" id="hd-1" class="hide" />
                     <label for="hd-1">insert inline</label>
                     <div><textarea id="fstSequencesInline" rows="5" cols="39" name="fst_sequences_inline"></textarea>
@@ -123,6 +119,10 @@
         </aside>
         <footer class="main-footer">NSU 2020 <a href="mailto:andrey.bocharnikov@gmail.com">E-mail</a></footer>
     </span>
+
+    <script type="module">
+        import { readFile } from "../main.js";
+    </script>
 
 </body>
 
