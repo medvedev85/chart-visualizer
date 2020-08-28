@@ -131,7 +131,6 @@ function countTotalLen(text) {
 }
 
 export function calcRatios(text) {
-    let t0 = performance.now();
     let counts = calcFrequencies(text);
     let total = countTotalLen(text);
 
@@ -139,11 +138,10 @@ export function calcRatios(text) {
         counts[l] /= total;
     }
     let t1 = performance.now();
-    console.log("calcRatios: " + (t1 - t0) + " milliseconds.");
     return counts
 }
 
-export function probInPos(motif, ratios) {
+function probInPos(motif, ratios) {
     var prob1 = 1.0;
     motif.toUpperCase().split("").forEach(function (s) {
         let symbols = motifsMap[s];
@@ -156,14 +154,75 @@ export function probInPos(motif, ratios) {
     return prob1;
 }
 
-export function probInSec(prob1, seq_len) {
+function probInSec(prob1, seq_len) {
     var prob2 = 1.0 - Math.exp(-prob1 * (seq_len - 7) * 2);
     return prob2;
 }
 
-export function calcChi2Double(prob_pos, matches, seq_count) {
+function calcChi2Double(prob_pos, matches, seq_count) {
     var expected = prob_pos * seq_count;
     var x = expected - matches;
     var chi2 = x * x / (expected);
     return chi2;
+}
+
+export function countProbs(motif, splitted, curMatches, ratios) {
+    
+    let seqLen = splitted[0][1].length;
+    let seqCount = splitted.length; //it count
+    let prob1 = probInPos(motif, ratios);
+    let prob2 = probInSec(prob1, seqLen);
+    let chi2 = calcChi2Double(prob2, curMatches, seqCount);//seqcount - infos.count
+    //let binomCoeffLogs = getBinomCoeffLogs(seqCount);
+    //console.log(binomByHash(prob2, curMatches, binomCoeffLogs, seqCount));
+    return chi2;
+}
+
+function getBinomCoeffLogs(seqCount) {
+    let n = seqCount;
+    let binomCoeffLogs = [];
+    let logs = [];
+
+    logs.length = n + 1;
+    logs.fill(0);
+
+    for (let i = 0; i <= n; i++) {
+        if (i > 0) {
+            logs[i] -= Math.log(i);
+        }
+
+        logs[i] += Math.log(n - i + 1);
+    }
+
+    binomCoeffLogs.length = n + 1;
+    binomCoeffLogs.fill(0);
+
+    for (let i = 1; i <= n; i++) {
+        binomCoeffLogs[i] = logs[i] + binomCoeffLogs[i - 1];
+    }
+
+    return binomCoeffLogs;
+}
+
+function binomByHash(prob2, curMatches, binomCoeffLogs, seqCount) {
+    let weight = curMatches;
+
+    if (weight == 0) {
+        return 0;
+    }
+
+    let p = prob2;
+    let q = 1 - p;
+    let lp = Math.log(p);
+    let lq = Math.log(q);
+    let pq = p / q;
+    let prev = Math.exp(binomCoeffLogs[weight - 1] + (weight - 1) * lp + (seqCount - weight + 1) * lq);
+    let res = 0;
+
+    for (let i = weight; i <= seqCount; i++) {
+        prev *= pq * (seqCount - i + 1) / i;
+        res += prev;
+    }
+
+    return Math.log10(res) * (-1);
 }
